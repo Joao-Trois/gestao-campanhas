@@ -1,0 +1,195 @@
+{
+  "1:4": [
+    {
+      "type": "FRAME",
+      "path": "Login > Login",
+      "color": "rgba(248, 243, 249, 1.00)"
+    },
+    {
+      "type": "FRAME",
+      "path": "Login > Página > Página",
+      "gap": 10
+    },
+    {
+      "type": "FRAME",
+      "path": "Login > Página > Login > Login",
+      "color": "rgba(252, 251, 253, 1.00)",
+      "borderRadius": 16,
+      "padding": "24px 24px 24px 24px",
+      "gap": 32
+    },
+    {
+      "type": "FRAME",
+      "path": "Login > Página > Login > Frame 46 > Frame 46",
+      "gap": 16
+    },
+    {
+      "type": "FRAME",
+      "path": "Login > Página > Login > Frame 2 > Frame 2"
+    },
+    {
+      "type": "FRAME",
+      "path": "Login > Página > Login > Campos de Login > Campos de Login",
+      "gap": 16
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Login > Página > Login > Card Botão ícone > Card Botão ícone",
+      "color": "rgba(137, 75, 234, 1.00)",
+      "borderRadius": 8,
+      "padding": "undefinedpx 16px undefinedpx 16px",
+      "gap": 16
+    }
+  ],
+  "67:927": [
+    {
+      "type": "FRAME",
+      "path": "Tags > Tags",
+      "color": "rgba(248, 243, 249, 1.00)"
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Tags > Barra Lateral > Barra Lateral",
+      "color": "rgba(95, 54, 162, 1.00)",
+      "padding": "32px 16px 32px 16px",
+      "gap": 16
+    },
+    {
+      "type": "FRAME",
+      "path": "Tags > Barra Lateral > Frame 112 > Frame 112",
+      "padding": "8px 8px 8px 8px",
+      "gap": 8
+    },
+    {
+      "type": "RECTANGLE",
+      "path": "Tags > Barra Lateral > Frame 112 > image 8 > image 8"
+    },
+    {
+      "type": "TEXT",
+      "path": "Tags > Barra Lateral > Frame 112 > Gestão de Campanhas > Gestão de Campanhas",
+      "color": "rgba(234, 226, 245, 1.00)",
+      "text": "Gestão de Campanhas",
+      "font": "Plus Jakarta Sans",
+      "fontSize": 18,
+      "fontWeight": 700
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Tags > Barra Lateral > Navbar texto cheio > Navbar texto cheio",
+      "borderRadius": 8,
+      "padding": "8px 8px 8px 8px"
+    },
+    {
+      "type": "FRAME",
+      "path": "Tags > Barra Lateral > Navbar texto cheio > Frame 40 > Frame 40",
+      "gap": 10
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Tags > Barra Lateral > Navbar texto cheio > Navbar texto cheio",
+      "borderRadius": 8,
+      "padding": "8px 8px 8px 8px"
+    },
+    {
+      "type": "FRAME",
+      "path": "Tags > Barra Lateral > Navbar texto cheio > Frame 40 > Frame 40",
+      "gap": 10
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Tags > Barra Lateral > Navbar texto cheio > Navbar texto cheio",
+      "borderRadius": 8,
+      "padding": "8px 8px 8px 8px"
+    },
+    {
+      "type": "FRAME",
+      "path": "Tags > Barra Lateral > Navbar texto cheio > Frame 40 > Frame 40",
+      "gap": 10
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Tags > Barra Lateral > Navbar texto cheio > Navbar texto cheio",
+      "color": "rgba(129, 68, 226, 1.00)",
+      "borderRadius": 8,
+      "padding": "8px 8px 8px 8px"
+    },
+    {
+      "type": "FRAME",
+      "path": "Tags > Barra Lateral > Navbar texto cheio > Frame 40 > Frame 40",
+      "gap": 10
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Tags > Barra Lateral > Navbar texto cheio > Navbar texto cheio",
+      "borderRadius": 8,
+      "padding": "8px 8px 8px 8px"
+    },
+    {
+      "type": "FRAME",
+      "path": "Tags > Barra Lateral > Navbar texto cheio > Frame 40 > Frame 40",
+      "gap": 10
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Tags > Barra Lateral > Navbar texto cheio > Navbar texto cheio",
+      "borderRadius": 8,
+      "padding": "8px 8px 8px 8px"
+    },
+    {
+      "type": "FRAME",
+      "path": "Tags > Barra Lateral > Navbar texto cheio > Frame 40 > Frame 40",
+      "gap": 10
+    },
+    {
+      "type": "FRAME",
+      "path": "Tags > Página > Página",
+      "gap": 24
+    },
+    {
+      "type": "FRAME",
+      "path": "Tags > Página > Frame 3 > Frame 3",
+      "color": "rgba(252, 251, 253, 1.00)",
+      "padding": "undefinedpx 26px undefinedpx 26px",
+      "gap": 8
+    },
+    {
+      "type": "TEXT",
+      "path": "Tags > Página > Frame 3 > Tags > Tags",
+      "color": "rgba(36, 11, 75, 1.00)",
+      "text": "Tags",
+      "font": "Plus Jakarta Sans",
+      "fontSize": 36,
+      "fontWeight": 700
+    },
+    {
+      "type": "FRAME",
+      "path": "Tags > Página > Frame 5 > Frame 5",
+      "padding": "undefinedpx 26px undefinedpx 26px",
+      "gap": 24
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Tags > Página > Frame 5 > Card Botão ícone > Card Botão ícone",
+      "color": "rgba(137, 75, 234, 1.00)",
+      "borderRadius": 8,
+      "padding": "undefinedpx 16px undefinedpx 16px",
+      "gap": 16
+    },
+    {
+      "type": "FRAME",
+      "path": "Tags > Página > Frame 8 > Frame 8",
+      "padding": "undefinedpx 26px 38px 26px",
+      "gap": 24
+    },
+    {
+      "type": "FRAME",
+      "path": "Tags > Página > Frame 8 > Frame 6 > Frame 6",
+      "color": "rgba(252, 251, 253, 1.00)",
+      "borderColor": "rgba(234, 226, 245, 1.00)",
+      "borderWeight": 1,
+      "borderRadius": 8,
+      "padding": "16px 16px 16px 16px",
+      "gap": 8
+    }
+  ]
+}

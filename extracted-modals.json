@@ -1,0 +1,314 @@
+{
+  "124:1168": [
+    {
+      "type": "FRAME",
+      "path": "Popup Criação de Lista > Popup Criação de Lista",
+      "color": "rgba(252, 251, 253, 1.00)",
+      "borderColor": "rgba(234, 226, 245, 1.00)",
+      "borderWeight": 1,
+      "borderRadius": 8,
+      "padding": "16px 16px 16px 16px",
+      "gap": 16
+    },
+    {
+      "type": "FRAME",
+      "path": "Popup Criação de Lista > Frame 52 > Frame 52",
+      "gap": 8
+    },
+    {
+      "type": "TEXT",
+      "path": "Popup Criação de Lista > Frame 52 > Nova Lista de Contatos > Nova Lista de Contatos",
+      "color": "rgba(36, 11, 75, 1.00)",
+      "text": "Nova Lista de Contatos",
+      "font": "Plus Jakarta Sans",
+      "fontSize": 20,
+      "fontWeight": 600
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Popup Criação de Lista > Campo de texto com titulo > Campo de texto com titulo",
+      "gap": 8
+    },
+    {
+      "type": "TEXT",
+      "path": "Popup Criação de Lista > Campo de texto com titulo > Usuário: > Usuário:",
+      "color": "rgba(36, 11, 75, 1.00)",
+      "text": "Nome da lista:",
+      "font": "Plus Jakarta Sans",
+      "fontSize": 16,
+      "fontWeight": 600
+    },
+    {
+      "type": "FRAME",
+      "path": "Popup Criação de Lista > Campo de texto com titulo > Caixa de Texto > Caixa de Texto",
+      "borderColor": "rgba(129, 68, 226, 1.00)",
+      "borderWeight": 0.800000011920929,
+      "padding": "4px 4px 4px 4px",
+      "gap": 8
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Popup Criação de Lista > Campo de texto com titulo > Caixa de Texto > icones login > icones login"
+    },
+    {
+      "type": "TEXT",
+      "path": "Popup Criação de Lista > Campo de texto com titulo > Caixa de Texto > Digite o seu usuário > Digite o seu usuário",
+      "color": "rgba(84, 69, 107, 1.00)",
+      "text": "Ex: Contatos Natação 2025 TURMA 1",
+      "font": "Plus Jakarta Sans",
+      "fontSize": 16,
+      "fontWeight": 500
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Popup Criação de Lista > Botão Dropdown > Botão Dropdown",
+      "color": "rgba(252, 251, 253, 1.00)",
+      "borderColor": "rgba(238, 221, 244, 1.00)",
+      "borderWeight": 2,
+      "borderRadius": 8,
+      "padding": "3px 8px 3px 16px",
+      "gap": 10
+    },
+    {
+      "type": "TEXT",
+      "path": "Popup Criação de Lista > Botão Dropdown > Tag > Tag",
+      "color": "rgba(84, 69, 107, 1.00)",
+      "text": "Tag",
+      "font": "Plus Jakarta Sans",
+      "fontSize": 16,
+      "fontWeight": 500
+    },
+    {
+      "type": "FRAME",
+      "path": "Popup Criação de Lista > Botão Dropdown > Keyboard arrow right > Keyboard arrow right"
+    },
+    {
+      "type": "VECTOR",
+      "path": "Popup Criação de Lista > Botão Dropdown > Keyboard arrow right > Vector > Vector"
+    },
+    {
+      "type": "VECTOR",
+      "path": "Popup Criação de Lista > Botão Dropdown > Keyboard arrow right > Vector > Vector",
+      "color": "rgba(84, 69, 107, 1.00)"
+    },
+    {
+      "type": "FRAME",
+      "path": "Popup Criação de Lista > Frame 51 > Frame 51",
+      "color": "rgba(238, 221, 244, 1.00)",
+      "borderColor": "rgba(137, 75, 234, 1.00)",
+      "borderWeight": 2,
+      "borderRadius": 8,
+      "gap": 8
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Popup Criação de Lista > Frame 51 > icones card botao cheio > icones card botao cheio",
+      "borderRadius": 4
+    },
+    {
+      "type": "VECTOR",
+      "path": "Popup Criação de Lista > Frame 51 > icones card botao cheio > cloud_upload > cloud_upload",
+      "color": "rgba(252, 251, 253, 1.00)"
+    },
+    {
+      "type": "TEXT",
+      "path": "Popup Criação de Lista > Frame 51 > Arraste e Solte o Arquivo (.xlsx) aqui ou clique para selecionar Apenas formato .xlsx suportado > Arraste e Solte o Arquivo (.xlsx) aqui ou clique para selecionar Apenas formato .xlsx suportado",
+      "color": "rgba(0, 0, 0, 1.00)",
+      "text": "Arraste e Solte o Arquivo (.xlsx) aqui\\nou clique para selecionar\\n\\nApenas formato .xlsx suportado",
+      "font": "Plus Jakarta Sans",
+      "fontSize": 12,
+      "fontWeight": 500
+    },
+    {
+      "type": "FRAME",
+      "path": "Popup Criação de Lista > Frame 53 > Frame 53",
+      "color": "rgba(248, 243, 249, 1.00)",
+      "borderColor": "rgba(234, 226, 245, 1.00)",
+      "borderWeight": 2,
+      "borderRadius": 8,
+      "padding": "10px 10px 10px 10px",
+      "gap": 10
+    },
+    {
+      "type": "TEXT",
+      "path": "Popup Criação de Lista > Frame 53 > Nenhum arquivo selecionado > Nenhum arquivo selecionado",
+      "color": "rgba(115, 103, 134, 1.00)",
+      "text": "Nenhum arquivo selecionado",
+      "font": "Plus Jakarta Sans",
+      "fontSize": 16,
+      "fontWeight": 500
+    },
+    {
+      "type": "FRAME",
+      "path": "Popup Criação de Lista > Campo de texto com titulo > Campo de texto com titulo",
+      "gap": 8
+    },
+    {
+      "type": "TEXT",
+      "path": "Popup Criação de Lista > Campo de texto com titulo > Usuário: > Usuário:",
+      "color": "rgba(36, 11, 75, 1.00)",
+      "text": "Colunas detectadas:",
+      "font": "Plus Jakarta Sans",
+      "fontSize": 16,
+      "fontWeight": 600
+    },
+    {
+      "type": "FRAME",
+      "path": "Popup Criação de Lista > Campo de texto com titulo > Frame 63 > Frame 63",
+      "gap": 8
+    },
+    {
+      "type": "FRAME",
+      "path": "Popup Criação de Lista > Campo de texto com titulo > Frame 63 > Frame 61 > Frame 61",
+      "color": "rgba(248, 243, 249, 1.00)",
+      "borderColor": "rgba(234, 226, 245, 1.00)",
+      "borderWeight": 1.5,
+      "borderRadius": 8,
+      "padding": "8px 8px 8px 8px",
+      "gap": 8
+    },
+    {
+      "type": "FRAME",
+      "path": "Popup Criação de Lista > Campo de texto com titulo > Frame 63 > Frame 67 > Frame 67",
+      "color": "rgba(248, 243, 249, 1.00)",
+      "borderColor": "rgba(234, 226, 245, 1.00)",
+      "borderWeight": 1.5,
+      "borderRadius": 8,
+      "padding": "8px 8px 8px 8px",
+      "gap": 8
+    },
+    {
+      "type": "FRAME",
+      "path": "Popup Criação de Lista > Campo de texto com titulo > Frame 63 > Frame 68 > Frame 68",
+      "color": "rgba(248, 243, 249, 1.00)",
+      "borderColor": "rgba(234, 226, 245, 1.00)",
+      "borderWeight": 1.5,
+      "borderRadius": 8,
+      "padding": "8px 8px 8px 8px",
+      "gap": 8
+    },
+    {
+      "type": "FRAME",
+      "path": "Popup Criação de Lista > Campo de texto com titulo > Frame 63 > Frame 70 > Frame 70",
+      "color": "rgba(248, 243, 249, 1.00)",
+      "borderColor": "rgba(234, 226, 245, 1.00)",
+      "borderWeight": 1.5,
+      "borderRadius": 8,
+      "padding": "8px 8px 8px 8px",
+      "gap": 8
+    },
+    {
+      "type": "FRAME",
+      "path": "Popup Criação de Lista > Campo de texto com titulo > Frame 63 > Frame 71 > Frame 71",
+      "color": "rgba(248, 243, 249, 1.00)",
+      "borderColor": "rgba(234, 226, 245, 1.00)",
+      "borderWeight": 1.5,
+      "borderRadius": 8,
+      "padding": "8px 8px 8px 8px",
+      "gap": 8
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Popup Criação de Lista > Card Botão ícone > Card Botão ícone",
+      "color": "rgba(137, 75, 234, 1.00)",
+      "borderRadius": 8,
+      "padding": "undefinedpx 16px undefinedpx 16px",
+      "gap": 8.800000190734863
+    },
+    {
+      "type": "TEXT",
+      "path": "Popup Criação de Lista > Card Botão ícone > Texto do Botão > Texto do Botão",
+      "color": "rgba(252, 251, 253, 1.00)",
+      "text": "Criar lista",
+      "font": "Plus Jakarta Sans",
+      "fontSize": 24,
+      "fontWeight": 600
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Popup Criação de Lista > Card Botão ícone > icones card botao cheio > icones card botao cheio",
+      "borderRadius": 4
+    },
+    {
+      "type": "VECTOR",
+      "path": "Popup Criação de Lista > Card Botão ícone > icones card botao cheio > Vector > Vector",
+      "color": "rgba(252, 251, 253, 1.00)"
+    }
+  ],
+  "206:1062": [
+    {
+      "type": "FRAME",
+      "path": "Popup confirmação > Popup confirmação",
+      "color": "rgba(252, 251, 253, 1.00)",
+      "borderColor": "rgba(234, 226, 245, 1.00)",
+      "borderWeight": 1,
+      "borderRadius": 8,
+      "padding": "16px 16px 16px 16px",
+      "gap": 16
+    },
+    {
+      "type": "FRAME",
+      "path": "Popup confirmação > Frame 52 > Frame 52",
+      "gap": 8
+    },
+    {
+      "type": "TEXT",
+      "path": "Popup confirmação > Frame 52 > Você tem certeza? > Você tem certeza?",
+      "color": "rgba(36, 11, 75, 1.00)",
+      "text": "Você tem certeza?",
+      "font": "Plus Jakarta Sans",
+      "fontSize": 20,
+      "fontWeight": 600
+    },
+    {
+      "type": "FRAME",
+      "path": "Popup confirmação > Frame 113 > Frame 113",
+      "gap": 16
+    },
+    {
+      "type": "FRAME",
+      "path": "Popup confirmação > Frame 113 > Card Botão ícone > Card Botão ícone",
+      "borderColor": "rgba(234, 226, 245, 1.00)",
+      "borderWeight": 2,
+      "borderRadius": 8,
+      "padding": "undefinedpx 16px undefinedpx 16px",
+      "gap": 8.800000190734863
+    },
+    {
+      "type": "TEXT",
+      "path": "Popup confirmação > Frame 113 > Card Botão ícone > Cancelar > Cancelar",
+      "color": "rgba(84, 69, 107, 1.00)",
+      "text": "Cancelar",
+      "font": "Plus Jakarta Sans",
+      "fontSize": 24,
+      "fontWeight": 600
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Popup confirmação > Frame 113 > Card Botão ícone > icones card botao cheio > icones card botao cheio",
+      "borderRadius": 4
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Popup confirmação > Frame 113 > Card Botão ícone > Card Botão ícone",
+      "color": "rgba(137, 75, 234, 1.00)",
+      "borderRadius": 8,
+      "padding": "undefinedpx 16px undefinedpx 16px",
+      "gap": 8.800000190734863
+    },
+    {
+      "type": "TEXT",
+      "path": "Popup confirmação > Frame 113 > Card Botão ícone > Texto do Botão > Texto do Botão",
+      "color": "rgba(252, 251, 253, 1.00)",
+      "text": "Confirmar",
+      "font": "Plus Jakarta Sans",
+      "fontSize": 24,
+      "fontWeight": 600
+    },
+    {
+      "type": "INSTANCE",
+      "path": "Popup confirmação > Frame 113 > Card Botão ícone > icones card botao cheio > icones card botao cheio",
+      "borderRadius": 4
+    }
+  ]
+}
