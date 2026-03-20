@@ -375,8 +375,13 @@ function UserModal({ isOpen, onClose, onSave, user }) {
         if (error) throw error;
       } else {
         // Create User - Chama Edge Function para o bypass seguro da SERVICE_ROLE
+        const { data: { session } } = await supabase.auth.getSession();
+        
         const { data, error } = await supabase.functions.invoke('create-user', {
-          body: formData
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
+          }
         });
 
         if (error) throw error;
