@@ -11,6 +11,7 @@ import ContactListDetails from './pages/ContactListDetails';
 import Campaigns from './pages/Campaigns';
 import CampaignWizard from './pages/CampaignWizard';
 import CampaignDetails from './pages/CampaignDetails';
+import Settings from './pages/Settings';
 import DashboardLayout from './layouts/DashboardLayout';
 
 function ProtectedRoute({ children }) {
@@ -24,6 +25,20 @@ function ProtectedRoute({ children }) {
     return <Navigate to="/login" replace />;
   }
 
+  return children;
+}
+
+function AdminRoute({ children }) {
+  const { profile, loading } = useAuth();
+  
+  if (loading || profile === null) {
+    return <div className="min-h-screen bg-[var(--color-bg-page)] flex items-center justify-center text-[var(--color-primary)] font-medium">Carregando...</div>;
+  }
+  
+  if (profile.role !== 'admin') {
+    return <Navigate to="/campanhas" replace />;
+  }
+  
   return children;
 }
 
@@ -54,6 +69,14 @@ function App() {
             <Route path="campanhas/nova" element={<CampaignWizard />} />
             <Route path="campanhas/:id/editar" element={<CampaignWizard />} />
             <Route path="campanhas/:id" element={<CampaignDetails />} />
+            <Route 
+              path="configuracoes" 
+              element={
+                <AdminRoute>
+                  <Settings />
+                </AdminRoute>
+              } 
+            />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,15 +1,22 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Tags, MessageSquare, Users, Settings, Megaphone } from 'lucide-react';
+import { LayoutDashboard, Tags, MessageSquare, Users, Settings as SettingsIcon, Megaphone } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Sidebar() {
+  const { profile } = useAuth();
+
   const menuItems = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
     { name: 'Tags', path: '/tags', icon: Tags },
     { name: 'Templates', path: '/templates', icon: MessageSquare },
     { name: 'Listas', path: '/listas', icon: Users },
     { name: 'Campanhas', path: '/campanhas', icon: Megaphone },
-    { name: 'Configurações', path: '/configuracoes', icon: Settings },
   ];
+
+  // Mantém visível enquanto carrega (null) e só esconde se for explicitamente diferente de admin
+  if (profile === null || profile?.role === 'admin') {
+    menuItems.push({ name: 'Configurações', path: '/configuracoes', icon: SettingsIcon });
+  }
 
   return (
     <div className="w-[260px] h-screen bg-[var(--color-sidebar)] flex flex-col py-8 px-4 gap-4 flex-shrink-0">

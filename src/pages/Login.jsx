@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { AlertCircle } from 'lucide-react';
@@ -8,8 +8,16 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Redireciona de forma reativa apenas após a garantia de carregamento global do AuthContext
+  useEffect(() => {
+    console.log('Login useEffect:', { authLoading, user });
+    if (!authLoading && user !== null && user !== undefined) {
+      navigate('/campanhas', { replace: true });
+    }
+  }, [user, authLoading, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,7 +30,8 @@ export default function Login() {
       setError(error.message);
       setLoading(false);
     } else {
-      navigate('/');
+      // Garante que o loading volta para false mesmo se o useEffect demorar
+      setLoading(false);
     }
   };
 
