@@ -47,9 +47,20 @@ export const AuthProvider = ({ children }) => {
 
     // Apenas o listener é mantido. O Supabase v2 dispara um evento "INITIAL_SESSION"
     // ou "SIGNED_IN" na primeira carga, evitando dupla tentativa e "lock steal" no client.
+    console.log('Registrando onAuthStateChange — se aparecer mais de uma vez tem problema');
+    let lastEvent = null;
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth event:', event, 'User:', session?.user?.email, 'Expires:', new Date(session?.expires_at * 1000).toLocaleTimeString());
       // Evita setState em componente desmontado
       if (!mounted) return;
+
+      // Ignora eventos duplicados consecutivos
+      if (event === lastEvent && event === 'SIGNED_IN') {
+        console.log('Evento duplicado ignorado:', event);
+        return;
+      }
+      lastEvent = event;
 
       if (event === 'TOKEN_REFRESHED') {
         setSession(session);
@@ -67,22 +78,11 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     });
 
-    // Ping periódico para evitar cold start do Supabase (plano gratuito hiberna após inatividade)
-    const keepAlive = setInterval(async () => {
-      try {
-        // Ping na sessão
-        await supabase.auth.getSession();
-        // Ping no banco
-        await supabase.from('configuracoes').select('chave').limit(1);
-      } catch (e) {
-        console.log('keepAlive ping falhou:', e);
-      }
-    }, 2 * 60 * 1000); // ping a cada 2 minutos
+    // Ping periódico temporariamente removido para testes.
 
     return () => {
       mounted = false;
       clearTimeout(timeout);
-      clearInterval(keepAlive);
       subscription.unsubscribe();
     };
   }, []);

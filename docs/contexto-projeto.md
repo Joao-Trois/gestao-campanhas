@@ -33,12 +33,18 @@ gestao-campanhas/
 │   │   ├── ContactListDetails.jsx // Visualização dos contatos de uma lista
 │   │   ├── Campaigns.jsx      // Listagem de Campanhas com badges de status
 │   │   ├── CampaignWizard.jsx // Assistente de 4 etapas para criação/edição de Campanhas
-│   │   └── CampaignDetails.jsx // Dashboard individual de disparo de campanha
-│   ├── App.jsx                // Configuração das Rotas (ProtectedRoute)
+│   │   ├── CampaignDetails.jsx // Dashboard individual de disparo de campanha
+│   │   └── Settings.jsx       // Configurações e Gestão de Usuários (Admin)
+│   ├── App.jsx                // Configuração das Rotas (ProtectedRoute e AdminRoute)
 │   ├── index.css              // Variáveis CSS Globais, Animações e imports do Tailwind
 │   └── main.jsx               // Entry point do React
+├── supabase/              // Infraestrutura de Backend
+│   └── functions/
+│       └── create-user/       // Edge Function para criação de usuários (Admin)
 ├── docs/
 │   ├── schema.sql             // Definição completa do banco, Triggers e RLS no Supabase
+│   ├── fase2-templates.md     // Detalhes da implementação da Fase 2
+│   ├── fase5-configuracoes.md  // Detalhes da implementação da Fase 5
 │   └── contexto-projeto.md    // Este documento
 └── package.json               // Dependências e scripts
 ```
@@ -47,11 +53,12 @@ gestao-campanhas/
 
 ## 3. Resumo das Telas Implementadas
 
-*   **Autenticação (`Login.jsx`, `AuthContext.jsx`):** Fluxo de login utilizando e-mail e senha integrado ao Supabase. Rotas protegidas não permitem acesso sem sessão.
+*   **Autenticação (`Login.jsx`, `AuthContext.jsx`):** Fluxo de login utilizando e-mail e senha integrado ao Supabase. Rotas protegidas não permitem acesso sem sessão. Implementada resiliência com timeouts e fallbacks.
 *   **Tags (`Tags.jsx`):** Listagem e criação de tags para organizar templates. Possui uma lista animada em cascata e validações.
 *   **Templates (`Templates.jsx`, `TemplateForm.jsx`):** Gestão de modelos de mensagens. O formulário detecta chaves de variáveis no texto (ex: `{{nome}}`) e o sistema gerencia a associação multi-select com Tags.
 *   **Listas de Contatos (`ContactLists.jsx`, `ContactListImport.jsx`, `ContactListDetails.jsx`):** Upload de arquivos `.xlsx` e `.csv`, extração de colunas dinâmicas, validação de formato de número de telefone celular e listagem paginada.
 *   **Campanhas (`Campaigns.jsx`, `CampaignWizard.jsx`, `CampaignDetails.jsx`):** Fluxo completo de criação guiada (Wizard) com escolha de Template, Lista, mapeamento de colunas do excel para as variáveis do template, e agendamento. Mostra cards de acompanhamento e progresso dos envios.
+*   **Configurações (`Settings.jsx`):** Painel administrativo restrito a admins. Gestão de usuários (criação via Edge Function, edição e ativação/desativação) e visualização de parâmetros do sistema.
 
 ---
 
@@ -73,17 +80,17 @@ Configuradas no `index.css` global:
 
 ### 🧩 Padrões de Componentização
 - Separação clara entre *estado global* (Contextos), *roteamento* (`App.jsx`), *layouts* persistentes e as *pages*.
-- O código das *Pages* geralmente abriga modais contextuais na extremidade inferior do mesmo arquivo para manter o contexto fechado quando os componentes são acoplados.
+- Utilização de **Edge Functions** para bypassar restrições do cliente Auth no Supabase.
+- Controle de acessos via `<AdminRoute>`.
 
 ---
 
 ## 5. Status Atual
-O projeto está com a espinha dorsal de campanhas finalizada e operando. A UI é responsiva, segue firmemente a paleta de cores, e as integrações primárias com o banco (Supabase RLS) de Listas, Tags, Templates e Campanhas estão implementadas.
+O projeto concluiu a **Fase 5 (Gestão e Segurança)**. O sistema possui um fluxo de autenticação resiliente, controle de permissões por nível de usuário, e todas as funcionalidades principais de campanhas operando com estabilidade.
 
 ## 6. Próxima Tarefa
 
-**Aceleração para a Fase 5: Tela de Configurações e Gerenciamento de Usuários (Apenas Administradores)**
-- Adicionar no Contexto de Auth a verificação de `Role` (admin/usuario) lendo da tabela `profiles`.
-- Criar a proteção de rotas (`AdminRoute`) no `App.jsx`.
-- Implementar a listagem, edição (ativação/suspensão) e criação de usuários (usando `SERVICE_ROLE_KEY` via Edge Function ou outra estratégia segura).
-- Painel para inserir as chaves da API do WhatsApp (Meta) e URL do Webhook do N8N na tabela `configuracoes`.
+**Início da Fase 6: Integração Real com API do WhatsApp e Webhooks**
+- Configurar o envio real de mensagens via API da Meta usando os dados salvos em `configuracoes`.
+- Implementar o recebimento de status de entrega/leitura via Webhook (N8N ou direto no Supabase).
+- Atualização em tempo real do dashboard de progresso da campanha.
