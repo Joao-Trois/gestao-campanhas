@@ -1,7 +1,62 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { ArrowLeft, Save, AlertCircle, Check, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Save, AlertCircle, Check, MessageSquare, ChevronDown } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+
+function CustomSelect({ value, onChange, options, placeholder, className = "" }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(opt => opt.value === value);
+
+  return (
+    <div className={`relative ${className}`} ref={containerRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-4 py-2.5 bg-white border border-[#EAE2F5] rounded-lg focus:outline-none focus:border-[var(--color-primary)] transition-colors text-[#54456B] font-medium text-left"
+      >
+        <span className={!selectedOption ? "text-gray-400" : ""}>
+          {selectedOption ? selectedOption.label : placeholder}
+        </span>
+        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-1.5 w-full bg-white border border-[#EAE2F5] rounded-xl shadow-lg z-50 py-2 overflow-hidden animate-fadeIn">
+          <div className="max-h-60 overflow-y-auto">
+            {options.map(opt => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${value === opt.value
+                  ? 'bg-purple-50 text-[var(--color-primary)]'
+                  : 'text-[#54456B] hover:bg-gray-50'
+                  }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function TemplateForm() {
   const { id } = useParams();
@@ -17,7 +72,9 @@ export default function TemplateForm() {
     nome: '',
     descricao: '',
     texto: '',
-    variaveis: []
+    variaveis: [],
+    type: '',
+    meta_status: 'pendente'
   });
   const [selectedTags, setSelectedTags] = useState([]);
 
@@ -43,7 +100,9 @@ export default function TemplateForm() {
           nome: template.nome,
           descricao: template.descricao || '',
           texto: template.texto || '',
-          variaveis: template.variaveis || []
+          variaveis: template.variaveis || [],
+          type: template.type || '',
+          meta_status: template.meta_status || 'pendente'
         });
         setSelectedTags(template.template_tags.map(tt => tt.tag_id));
       } else {
@@ -73,6 +132,8 @@ export default function TemplateForm() {
     });
   }
 
+  const isTextoInvalido = /\{\{[a-zA-Z0-9_]+\}\}[\s.,!?;:]*$/.test(formData.texto || '');
+
   function toggleTag(tagId) {
     if (selectedTags.includes(tagId)) {
       setSelectedTags(selectedTags.filter(id => id !== tagId));
@@ -83,8 +144,13 @@ export default function TemplateForm() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!formData.nome.trim() || !formData.texto.trim()) {
+    if (!formData.nome.trim() || !formData.texto.trim() || !formData.type) {
       showToast('error', 'Preencha os campos obrigatórios.');
+      return;
+    }
+
+    if (isTextoInvalido) {
+      showToast('error', 'A última palavra do template não pode ser uma variável.');
       return;
     }
 
@@ -101,6 +167,7 @@ export default function TemplateForm() {
             descricao: formData.descricao || null,
             texto: formData.texto,
             variaveis: formData.variaveis,
+            type: formData.type,
             atualizado_em: new Date().toISOString()
           })
           .eq('id', id);
@@ -113,8 +180,6 @@ export default function TemplateForm() {
           const relationInserts = selectedTags.map(tag_id => ({ template_id: id, tag_id }));
           await supabase.from('template_tags').insert(relationInserts);
         }
-
-        showToast('success', 'Template atualizado com sucesso!');
       } else {
         // CREATE Template
         const { data: newTemplate, error: iError } = await supabase
@@ -123,7 +188,8 @@ export default function TemplateForm() {
             nome: formData.nome,
             descricao: formData.descricao || null,
             texto: formData.texto,
-            variaveis: formData.variaveis
+            variaveis: formData.variaveis,
+            type: formData.type
           }])
           .select()
           .single();
@@ -136,10 +202,43 @@ export default function TemplateForm() {
           const relationInserts = selectedTags.map(tag_id => ({ template_id: savedTemplateId, tag_id }));
           await supabase.from('template_tags').insert(relationInserts);
         }
-
-        showToast('success', 'Template salvo com sucesso!');
-        setTimeout(() => navigate('/templates'), 1500);
       }
+
+      // Webhook call
+      try {
+        const { data: configData } = await supabase
+          .from('configuracoes')
+          .select('valor')
+          .eq('chave', 'n8n_webhook_base_url')
+          .single();
+
+        if (configData?.valor) {
+          const res = await fetch(`${configData.valor}/criarTemplate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              template_id: savedTemplateId,
+              nome: formData.nome,
+              idioma: 'pt_BR',
+              categoria: formData.type,
+              corpo: formData.texto,
+              variaveis: formData.variaveis,
+              rodape: null
+            })
+          });
+
+          if (!res.ok) throw new Error('Falha na resposta do webhook');
+
+          showToast('success', 'Template enviado para aprovação da Meta');
+        } else {
+          showToast('success', isEditing ? 'Template atualizado com sucesso!' : 'Template salvo com sucesso!');
+        }
+      } catch (webhookErr) {
+        console.error('Webhook error:', webhookErr);
+        showToast('error', 'Falha ao enviar para aprovação da Meta');
+      }
+
+      setTimeout(() => navigate('/templates'), 1500);
     } catch (err) {
       console.error(err);
       showToast('error', err.message);
@@ -194,14 +293,16 @@ export default function TemplateForm() {
           <h1 className="text-[36px] font-bold text-[var(--color-text-main)]">
             {isEditing ? 'Editar Template' : 'Novo Template'}
           </h1>
-          <button
-            onClick={handleSubmit}
-            disabled={saving}
-            className="flex items-center gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-6 h-[42px] rounded-lg font-semibold text-sm transition-colors shadow-sm disabled:opacity-50"
-          >
-            <Save className="w-4 h-4" />
-            {saving ? 'Salvando...' : 'Salvar Template'}
-          </button>
+          {(!isEditing || formData.meta_status === 'pendente' || formData.meta_status === 'recusado') && (
+            <button
+              onClick={handleSubmit}
+              disabled={saving}
+              className="flex items-center gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-6 h-[42px] rounded-lg font-semibold text-sm transition-colors shadow-sm disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              {saving ? 'Salvando...' : 'Salvar Template'}
+            </button>
+          )}
         </div>
       </div>
 
@@ -225,6 +326,18 @@ export default function TemplateForm() {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
+                <label className="text-[16px] font-semibold text-[#240B4B]">Tipo de Template *</label>
+                <CustomSelect
+                  value={formData.type}
+                  onChange={val => setFormData({ ...formData, type: val })}
+                  placeholder="Selecione um tipo"
+                  options={[
+                    { value: 'MARKETING', label: 'Marketing' },
+                    { value: 'UTILITY', label: 'Utilidade' }
+                  ]}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5 md:col-span-2">
                 <label className="text-[16px] font-semibold text-[#240B4B]">Descrição Interna</label>
                 <input
                   type="text"
@@ -246,9 +359,14 @@ export default function TemplateForm() {
                 rows={6}
                 value={formData.texto}
                 onChange={handleTextChange}
-                className="w-full px-4 py-3 border border-[#EAE2F5] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[#54456B] font-medium resize-y"
+                className={`w-full px-4 py-3 border ${isTextoInvalido ? 'border-red-500 focus:border-red-500' : 'border-[#EAE2F5] focus:border-[var(--color-primary)]'} rounded-lg focus:outline-none text-[#54456B] font-medium resize-y`}
                 placeholder="Olá {{Nome}}, seu boleto no valor de {{Valor}} vence dia..."
               />
+              {isTextoInvalido && formData.texto.trim().length > 0 && (
+                <span className="text-red-500 text-sm font-semibold mt-1">
+                  A última palavra do template não pode ser uma variável.
+                </span>
+              )}
             </div>
 
             {/* Selector de Tags Opcionais */}

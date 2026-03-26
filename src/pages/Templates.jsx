@@ -262,6 +262,12 @@ export default function Templates() {
                       <h3 className="font-bold text-[18px] text-[var(--color-text-main)]">
                         {template.nome}
                       </h3>
+                      {template.type === 'MARKETING' && (
+                        <span className="bg-blue-100 text-blue-700 text-[11px] py-1 px-2 font-bold rounded-full">MARKETING</span>
+                      )}
+                      {template.type === 'UTILITY' && (
+                        <span className="bg-green-100 text-green-700 text-[11px] py-1 px-2 font-bold rounded-full">UTILITY</span>
+                      )}
                       {template.meta_status === 'aprovado' ? (
                         <span className="bg-green-100 text-green-700 text-[11px] py-1 px-2 font-bold rounded-full">✓ Aprovado</span>
                       ) : template.meta_status === 'recusado' ? (

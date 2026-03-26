@@ -55,7 +55,7 @@ export default function Login() {
               <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-lg">
                 <div className="flex">
                   <AlertCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
-                  <p className="ml-3 text-sm text-red-700">{error}</p>
+                  <p className="ml-3 text-sm text-red-700">Login inválido</p>
                 </div>
               </div>
             )}

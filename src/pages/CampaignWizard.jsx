@@ -431,7 +431,7 @@ export default function CampaignWizard() {
           const baseUrl = cfgData?.valor;
           if (baseUrl) {
             const endpoint = dispatchMode === 'now' ? 'disparar' : 'agendar';
-            await fetch(`${baseUrl}/campanhas/${endpoint}`, {
+            await fetch(`${baseUrl}/disparosMETA`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ campanha_id: campanhaId }),
