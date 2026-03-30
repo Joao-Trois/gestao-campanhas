@@ -291,7 +291,7 @@ export default function TemplateForm() {
         </button>
         <div className="flex justify-between items-center">
           <h1 className="text-[36px] font-bold text-[var(--color-text-main)]">
-            {isEditing ? 'Editar Template' : 'Novo Template'}
+            {isEditing ? 'Visualizar Template' : 'Novo Template'}
           </h1>
           {(!isEditing || formData.meta_status === 'pendente' || formData.meta_status === 'recusado') && (
             <button

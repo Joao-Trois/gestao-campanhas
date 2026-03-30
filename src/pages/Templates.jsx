@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { Plus, Search, Archive, ArchiveRestore, Edit2, MessageSquare, AlertCircle, ChevronRight, Trash2, Check } from 'lucide-react';
+import { Plus, Search, Archive, ArchiveRestore, Eye, MessageSquare, AlertCircle, ChevronRight, Trash2, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Templates() {
@@ -284,10 +284,10 @@ export default function Templates() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => navigate(`/templates/${template.id}`)}
-                      title="Editar"
+                      title="Visualizar"
                       className="p-2 text-gray-400 hover:text-[var(--color-primary)] transition-colors rounded-md hover:bg-gray-50"
                     >
-                      <Edit2 className="w-4 h-4" />
+                      <Eye className="w-4 h-4" />
                     </button>
                     {!template.ativo ? (
                       <>
