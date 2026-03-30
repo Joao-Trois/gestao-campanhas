@@ -13,7 +13,6 @@ export default function Login() {
 
   // Redireciona de forma reativa apenas após a garantia de carregamento global do AuthContext
   useEffect(() => {
-    console.log('Login useEffect:', { authLoading, user });
     if (!authLoading && user !== null && user !== undefined) {
       navigate('/campanhas', { replace: true });
     }
