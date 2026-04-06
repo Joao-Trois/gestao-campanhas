@@ -430,12 +430,17 @@ export default function CampaignWizard() {
 
           const baseUrl = cfgData?.valor;
           if (baseUrl) {
-            const endpoint = dispatchMode === 'now' ? 'disparar' : 'agendar';
-            await fetch(`${baseUrl}/disparosMETA`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ campanha_id: campanhaId }),
-            });
+            const agendadoParaDt = new Date(agendado_para);
+            const agora = new Date();
+
+            // Só dispara imediatamente se NÃO for agendamento futuro
+            if (!agendado_para || agendadoParaDt <= agora) {
+              await fetch(`${baseUrl}/disparosMETA`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ campanha_id: campanhaId }),
+              });
+            }
           }
         } catch (webhookErr) {
           console.warn('Webhook call failed (non-fatal):', webhookErr);
