@@ -1,3 +1,4 @@
+import { useAuth } from '../contexts/AuthContext';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -135,6 +136,7 @@ function localNowString() {
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function CampaignWizard() {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
 
   const { id } = useParams();
   const [step, setStep] = useState(1);
@@ -351,6 +353,8 @@ export default function CampaignWizard() {
             mapeamento: finalMapping,
             status,
             agendado_para,
+            criado_por: user?.id,
+            grupo_id: profile?.grupo_id,
           })
           .eq('id', id);
 
@@ -391,6 +395,8 @@ export default function CampaignWizard() {
             mapeamento: finalMapping,
             status,
             agendado_para,
+            criado_por: user?.id,
+            grupo_id: profile?.grupo_id,
           }])
           .select()
           .single();
