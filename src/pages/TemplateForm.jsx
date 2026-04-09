@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { ArrowLeft, Save, AlertCircle, Check, MessageSquare, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Save, AlertCircle, Check, MessageSquare, ChevronDown, Lock } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-function CustomSelect({ value, onChange, options, placeholder, className = "" }) {
+function CustomSelect({ value, onChange, options, placeholder, className = "", disabled = false }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
 
@@ -23,8 +23,9 @@ function CustomSelect({ value, onChange, options, placeholder, className = "" })
     <div className={`relative ${className}`} ref={containerRef}>
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-4 py-2.5 bg-white border border-[#EAE2F5] rounded-lg focus:outline-none focus:border-[var(--color-primary)] transition-colors text-[#54456B] font-medium text-left"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        className={`w-full flex items-center justify-between px-4 py-2.5 border border-[#EAE2F5] rounded-lg focus:outline-none transition-colors text-[#54456B] font-medium text-left ${disabled ? 'bg-gray-50 cursor-not-allowed' : 'bg-white focus:border-[var(--color-primary)]'}`}
       >
         <span className={!selectedOption ? "text-gray-400" : ""}>
           {selectedOption ? selectedOption.label : placeholder}
@@ -62,11 +63,16 @@ export default function TemplateForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditing = Boolean(id);
+  const isReadOnly = isEditing;
 
   const [loading, setLoading] = useState(isEditing);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
   const [allTags, setAllTags] = useState([]);
+  const [showVarInput, setShowVarInput] = useState(false);
+  const [varInputValue, setVarInputValue] = useState('');
+  const textareaRef = useRef(null);
+  const varInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     nome: '',
@@ -118,6 +124,7 @@ export default function TemplateForm() {
   }
 
   function handleTextChange(e) {
+    if (isReadOnly) return;
     const text = e.target.value;
 
     // Detect variables in format {{NomeDaVar}} or {{1}}
@@ -132,6 +139,46 @@ export default function TemplateForm() {
     });
   }
 
+  // Foca no input de variável quando ele aparece
+  useEffect(() => {
+    if (showVarInput && varInputRef.current) {
+      varInputRef.current.focus();
+    }
+  }, [showVarInput]);
+
+  function handleInsertVar() {
+    const name = varInputValue.trim();
+    if (!name) return;
+
+    const tag = `{{${name}}}`;
+    const textarea = textareaRef.current;
+
+    let newText;
+    if (textarea) {
+      const start = textarea.selectionStart ?? formData.texto.length;
+      const end = textarea.selectionEnd ?? formData.texto.length;
+      const before = formData.texto.slice(0, start);
+      const after = formData.texto.slice(end);
+      const separator = before.length > 0 && !before.endsWith(' ') ? ' ' : '';
+      newText = before + separator + tag + after;
+    } else {
+      newText = formData.texto + `{{${name}}}`;
+    }
+
+    handleTextChange({ target: { value: newText } });
+
+    setShowVarInput(false);
+    setVarInputValue('');
+
+    setTimeout(() => {
+      if (textarea) {
+        const pos = (textarea.selectionStart ?? 0) + tag.length + (newText !== formData.texto + tag ? 1 : 0);
+        textarea.focus();
+        textarea.setSelectionRange(pos, pos);
+      }
+    }, 0);
+  }
+
   const isTextoInvalido = /\{\{[a-zA-Z0-9_]+\}\}[\s.,!?;:]*$/.test(formData.texto || '');
 
   function toggleTag(tagId) {
@@ -144,6 +191,7 @@ export default function TemplateForm() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (isReadOnly) return;
     if (!formData.nome.trim() || !formData.texto.trim() || !formData.type) {
       showToast('error', 'Preencha os campos obrigatórios.');
       return;
@@ -290,10 +338,24 @@ export default function TemplateForm() {
           <ArrowLeft className="w-4 h-4" /> Voltar
         </button>
         <div className="flex justify-between items-center">
-          <h1 className="text-[36px] font-bold text-[var(--color-text-main)]">
-            {isEditing ? 'Visualizar Template' : 'Novo Template'}
-          </h1>
-          {(!isEditing || formData.meta_status === 'pendente' || formData.meta_status === 'recusado') && (
+          <div className="flex items-center gap-3">
+            <h1 className="text-[36px] font-bold text-[var(--color-text-main)]">
+              {isEditing ? 'Visualizar Template' : 'Novo Template'}
+            </h1>
+            {isReadOnly && (
+              <span className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg border ${
+                formData.meta_status === 'aprovado'
+                  ? 'bg-green-50 text-green-700 border-green-200'
+                  : formData.meta_status === 'recusado'
+                    ? 'bg-red-50 text-red-700 border-red-200'
+                    : 'bg-yellow-50 text-yellow-700 border-yellow-200'
+              }`}>
+                <Lock className="w-3.5 h-3.5" />
+                Somente leitura
+              </span>
+            )}
+          </div>
+          {!isReadOnly && (
             <button
               onClick={handleSubmit}
               disabled={saving}
@@ -319,9 +381,10 @@ export default function TemplateForm() {
                 <input
                   type="text"
                   required
+                  readOnly={isReadOnly}
                   value={formData.nome}
                   onChange={e => setFormData({ ...formData, nome: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-[#EAE2F5] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[#54456B] font-medium"
+                  className={`w-full px-4 py-2.5 border border-[#EAE2F5] rounded-lg focus:outline-none text-[#54456B] font-medium ${isReadOnly ? 'bg-gray-50 cursor-default' : 'focus:border-[var(--color-primary)]'}`}
                   placeholder="Ex: Cobrança Mensal"
                 />
               </div>
@@ -331,6 +394,7 @@ export default function TemplateForm() {
                   value={formData.type}
                   onChange={val => setFormData({ ...formData, type: val })}
                   placeholder="Selecione um tipo"
+                  disabled={isReadOnly}
                   options={[
                     { value: 'MARKETING', label: 'Marketing' },
                     { value: 'UTILITY', label: 'Utilidade' }
@@ -341,9 +405,10 @@ export default function TemplateForm() {
                 <label className="text-[16px] font-semibold text-[#240B4B]">Descrição Interna</label>
                 <input
                   type="text"
+                  readOnly={isReadOnly}
                   value={formData.descricao}
                   onChange={e => setFormData({ ...formData, descricao: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-[#EAE2F5] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[#54456B] font-medium"
+                  className={`w-full px-4 py-2.5 border border-[#EAE2F5] rounded-lg focus:outline-none text-[#54456B] font-medium ${isReadOnly ? 'bg-gray-50 cursor-default' : 'focus:border-[var(--color-primary)]'}`}
                   placeholder="Usado na régua de D-2"
                 />
               </div>
@@ -352,17 +417,47 @@ export default function TemplateForm() {
             <div className="flex flex-col gap-1.5 mt-2">
               <div className="flex justify-between items-end">
                 <label className="text-[16px] font-semibold text-[#240B4B]">Corpo da Mensagem *</label>
-                <span className="text-xs text-gray-500 font-medium bg-gray-100 px-2 py-1 rounded">Use {'{{Variavel}}'}</span>
+                {!isReadOnly && (
+                  !showVarInput ? (
+                    <button
+                      type="button"
+                      onClick={() => { setShowVarInput(true); setVarInputValue(''); }}
+                      className="flex items-center gap-1.5 text-xs font-semibold text-[var(--color-primary)] bg-purple-50 hover:bg-purple-100 border border-[#EAE2F5] px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      + Inserir variável
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2 animate-fadeIn">
+                      <input
+                        ref={varInputRef}
+                        type="text"
+                        value={varInputValue}
+                        onChange={e => setVarInputValue(e.target.value.replace(/\s/g, ''))}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleInsertVar(); } if (e.key === 'Escape') setShowVarInput(false); }}
+                        placeholder="NomeDaVariável"
+                        className="text-sm px-3 py-1.5 border border-[#EAE2F5] rounded-lg focus:outline-none focus:border-[var(--color-primary)] text-[#54456B] font-medium w-36"
+                      />
+                      <button type="button" onClick={handleInsertVar} className="text-xs font-bold text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] px-3 py-1.5 rounded-lg transition-colors">
+                        Inserir
+                      </button>
+                      <button type="button" onClick={() => setShowVarInput(false)} className="text-xs font-semibold text-gray-500 hover:text-gray-700 px-2 py-1.5 rounded-lg transition-colors">
+                        Cancelar
+                      </button>
+                    </div>
+                  )
+                )}
               </div>
               <textarea
+                ref={textareaRef}
                 required
+                readOnly={isReadOnly}
                 rows={6}
                 value={formData.texto}
                 onChange={handleTextChange}
-                className={`w-full px-4 py-3 border ${isTextoInvalido ? 'border-red-500 focus:border-red-500' : 'border-[#EAE2F5] focus:border-[var(--color-primary)]'} rounded-lg focus:outline-none text-[#54456B] font-medium resize-y`}
+                className={`w-full px-4 py-3 border ${!isReadOnly && isTextoInvalido ? 'border-red-500 focus:border-red-500' : 'border-[#EAE2F5]'} rounded-lg focus:outline-none text-[#54456B] font-medium ${isReadOnly ? 'bg-gray-50 cursor-default resize-none' : 'focus:border-[var(--color-primary)] resize-y'}`}
                 placeholder="Olá {{Nome}}, seu boleto no valor de {{Valor}} vence dia..."
               />
-              {isTextoInvalido && formData.texto.trim().length > 0 && (
+              {!isReadOnly && isTextoInvalido && formData.texto.trim().length > 0 && (
                 <span className="text-red-500 text-sm font-semibold mt-1">
                   A última palavra do template não pode ser uma variável.
                 </span>
@@ -371,16 +466,17 @@ export default function TemplateForm() {
 
             {/* Selector de Tags Opcionais */}
             <div className="flex flex-col gap-2 mt-2 pt-4 border-t border-[#EEF0F4]">
-              <label className="text-[16px] font-semibold text-[#240B4B]">Associar Tags (Opcional)</label>
+              <label className="text-[16px] font-semibold text-[#240B4B]">{isReadOnly ? 'Tags Associadas' : 'Associar Tags (Opcional)'}</label>
               <div className="flex flex-wrap gap-2">
-                {allTags.map(tag => {
+                {(isReadOnly ? allTags.filter(tag => selectedTags.includes(tag.id)) : allTags).map(tag => {
                   const isSelected = selectedTags.includes(tag.id);
                   return (
                     <button
                       key={tag.id}
                       type="button"
+                      disabled={isReadOnly}
                       onClick={() => toggleTag(tag.id)}
-                      className={`text-sm font-semibold px-3 py-1.5 rounded-md flex items-center flex-wrap gap-2 transition-all border ${isSelected ? 'border-[var(--color-primary)] ring-1 ring-[var(--color-primary)] shadow-sm' : 'border-[#EAE2F5] hover:border-gray-400 opacity-70'}`}
+                      className={`text-sm font-semibold px-3 py-1.5 rounded-md flex items-center flex-wrap gap-2 transition-all border ${isReadOnly ? 'pointer-events-none' : ''} ${isSelected ? 'border-[var(--color-primary)] ring-1 ring-[var(--color-primary)] shadow-sm' : 'border-[#EAE2F5] hover:border-gray-400 opacity-70'}`}
                       style={{ backgroundColor: isSelected ? '#FCFBFD' : '#F9F9FB', color: '#240B4B' }}
                     >
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: tag.cor }}></span>
@@ -388,7 +484,8 @@ export default function TemplateForm() {
                     </button>
                   );
                 })}
-                {allTags.length === 0 && <span className="text-sm text-gray-400">Nenhuma tag criada ainda no sistema.</span>}
+                {!isReadOnly && allTags.length === 0 && <span className="text-sm text-gray-400">Nenhuma tag criada ainda no sistema.</span>}
+                {isReadOnly && selectedTags.length === 0 && <span className="text-sm text-gray-400">Nenhuma tag associada.</span>}
               </div>
             </div>
 

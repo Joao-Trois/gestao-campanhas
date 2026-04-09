@@ -1,16 +1,28 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Tags, MessageSquare, Users, Settings as SettingsIcon, Megaphone } from 'lucide-react';
+import { LayoutDashboard, Tags, MessageSquare, Users, Settings as SettingsIcon, Megaphone, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Sidebar() {
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      localStorage.clear();
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Erro ao sair:', error);
+      localStorage.clear();
+      window.location.href = '/login';
+    }
+  };
 
   const menuItems = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-    { name: 'Tags', path: '/tags', icon: Tags },
+    { name: 'Campanhas', path: '/campanhas', icon: Megaphone },
     { name: 'Templates', path: '/templates', icon: MessageSquare },
     { name: 'Listas', path: '/listas', icon: Users },
-    { name: 'Campanhas', path: '/campanhas', icon: Megaphone },
+    { name: 'Tags', path: '/tags', icon: Tags },
   ];
 
   // Mantém visível enquanto carrega (null) e só esconde se for explicitamente diferente de admin
@@ -47,6 +59,16 @@ export default function Sidebar() {
           </NavLink>
         ))}
       </nav>
+
+      <div className="mt-auto pt-4 border-t border-white/10">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-semibold w-full text-[var(--color-text-sidebar)] hover:bg-white/10"
+        >
+          <LogOut className="w-5 h-5" />
+          Sair
+        </button>
+      </div>
     </div>
   );
 }

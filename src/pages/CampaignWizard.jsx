@@ -18,7 +18,7 @@ const STEPS = [
 
 function Stepper({ current }) {
   return (
-    <div className="flex justify-center items-center gap-8 mt-6 mb-8 w-full">
+    <div className="flex justify-center items-center gap-8 mt-4 mb-5 w-full">
       {STEPS.map((step, idx) => {
         const isDone = step.id < current;
         const isActive = step.id === current;
@@ -529,7 +529,7 @@ export default function CampaignWizard() {
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="flex-1 flex flex-col pt-8 pb-10 px-[26px] h-full overflow-y-auto relative">
+    <div className="flex-1 flex flex-col pt-6 pb-4 px-[26px] h-full overflow-hidden relative">
 
       {/* Toast */}
       {toast && (
@@ -559,75 +559,77 @@ export default function CampaignWizard() {
       {/* STEP 1 — Configuração */}
       {/* ──────────────────────────────────────────────────────────────────── */}
       {step === 1 && (
-        <>
-          <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-8 pb-10 mb-6 shadow-sm animate-scaleIn max-w-2xl w-full mx-auto">
-            <h2 className="text-[20px] font-bold text-[#240B4B] mb-6">Configuração da Campanha</h2>
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto pb-4">
+            <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-6 pb-6 shadow-sm animate-scaleIn max-w-2xl w-full mx-auto">
+              <h2 className="text-[20px] font-bold text-[#240B4B] mb-4">Configuração da Campanha</h2>
 
-            {/* Nome */}
-            <div className="flex flex-col gap-2 mb-6">
-              <label className="text-[#240B4B] text-sm font-bold">Nome da campanha *</label>
-              <input
-                type="text"
-                value={nome}
-                onChange={e => setNome(e.target.value)}
-                placeholder="Ex: Turma Natação — Março 2025"
-                className="w-full px-4 py-3 border border-[#EAE2F5] rounded-lg focus:outline-none focus:border-[var(--color-primary)] transition-colors text-[#54456B] font-medium"
-              />
-            </div>
-
-            {/* Template */}
-            <div className="flex flex-col gap-2 mb-4">
-              <label className="text-[#240B4B] text-sm font-bold">Template (apenas aprovados) *</label>
-              {/* Tag filter */}
-              <div className="flex gap-2 flex-wrap mb-2">
-                <button
-                  onClick={() => setTagFilter('')}
-                  className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors ${!tagFilter ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]' : 'bg-white text-gray-500 border-gray-200 hover:border-[var(--color-primary)]'}`}
-                >
-                  Todos
-                </button>
-                {allTags.map(tag => (
-                  <button
-                    key={tag.id}
-                    onClick={() => setTagFilter(tag.id === tagFilter ? '' : tag.id)}
-                    className={`px-3 py-1 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 ${tagFilter === tag.id ? 'ring-2 ring-offset-1' : 'hover:border-[var(--color-primary)]'}`}
-                    style={tagFilter === tag.id
-                      ? { backgroundColor: tag.cor, color: '#fff', borderColor: tag.cor }
-                      : { borderColor: `${tag.cor}60`, backgroundColor: `${tag.cor}10`, color: tag.cor }
-                    }
-                  >
-                    {tag.nome}
-                  </button>
-                ))}
+              {/* Nome */}
+              <div className="flex flex-col gap-2 mb-4">
+                <label className="text-[#240B4B] text-sm font-bold">Nome da campanha *</label>
+                <input
+                  type="text"
+                  value={nome}
+                  onChange={e => setNome(e.target.value)}
+                  placeholder="Ex: Turma Natação — Março 2025"
+                  className="w-full px-4 py-3 border border-[#EAE2F5] rounded-lg focus:outline-none focus:border-[var(--color-primary)] transition-colors text-[#54456B] font-medium"
+                />
               </div>
-              <CustomSelect
-                value={selectedTemplate?.id || ''}
-                onChange={val => {
-                  const found = templates.find(t => t.id === val);
-                  setSelectedTemplate(found || null);
-                }}
-                placeholder="Selecione um template..."
-                options={filteredTemplates.map(t => ({ value: t.id, label: t.nome }))}
-              />
-            </div>
 
-            {/* Lista */}
-            <div className="flex flex-col gap-2 mb-8">
-              <label className="text-[#240B4B] text-sm font-bold">Lista de contatos *</label>
-              <CustomSelect
-                value={selectedList?.id || ''}
-                onChange={val => {
-                  const found = lists.find(l => l.id === val);
-                  setSelectedList(found || null);
-                }}
-                placeholder="Selecione uma lista..."
-                options={lists.map(l => ({ value: l.id, label: l.nome }))}
-              />
-            </div>
+              {/* Template */}
+              <div className="flex flex-col gap-2 mb-4">
+                <label className="text-[#240B4B] text-sm font-bold">Template (apenas aprovados) *</label>
+                {/* Tag filter */}
+                <div className="flex gap-2 flex-wrap mb-2">
+                  <button
+                    onClick={() => setTagFilter('')}
+                    className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors ${!tagFilter ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]' : 'bg-white text-gray-500 border-gray-200 hover:border-[var(--color-primary)]'}`}
+                  >
+                    Todos
+                  </button>
+                  {allTags.map(tag => (
+                    <button
+                      key={tag.id}
+                      onClick={() => setTagFilter(tag.id === tagFilter ? '' : tag.id)}
+                      className={`px-3 py-1 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 ${tagFilter === tag.id ? 'ring-2 ring-offset-1' : 'hover:border-[var(--color-primary)]'}`}
+                      style={tagFilter === tag.id
+                        ? { backgroundColor: tag.cor, color: '#fff', borderColor: tag.cor }
+                        : { borderColor: `${tag.cor}60`, backgroundColor: `${tag.cor}10`, color: tag.cor }
+                      }
+                    >
+                      {tag.nome}
+                    </button>
+                  ))}
+                </div>
+                <CustomSelect
+                  value={selectedTemplate?.id || ''}
+                  onChange={val => {
+                    const found = templates.find(t => t.id === val);
+                    setSelectedTemplate(found || null);
+                  }}
+                  placeholder="Selecione um template..."
+                  options={filteredTemplates.map(t => ({ value: t.id, label: t.nome }))}
+                />
+              </div>
 
+              {/* Lista */}
+              <div className="flex flex-col gap-2 mb-4">
+                <label className="text-[#240B4B] text-sm font-bold">Lista de contatos *</label>
+                <CustomSelect
+                  value={selectedList?.id || ''}
+                  onChange={val => {
+                    const found = lists.find(l => l.id === val);
+                    setSelectedList(found || null);
+                  }}
+                  placeholder="Selecione uma lista..."
+                  options={lists.map(l => ({ value: l.id, label: l.nome }))}
+                />
+              </div>
+
+            </div>
           </div>
-          {/* Rodapé FORA do card */}
-          <div className="flex justify-between items-center mt-8 pt-4 border-t border-gray-200 max-w-2xl mx-auto w-full">
+          {/* Rodapé fixo */}
+          <div className="flex justify-between items-center pt-4 border-t border-gray-200 max-w-2xl mx-auto w-full shrink-0">
             <button
               onClick={() => navigate('/campanhas')}
               className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-[#EAE2F5] text-[#54456B] font-bold hover:bg-gray-50 transition-colors"
@@ -642,106 +644,107 @@ export default function CampaignWizard() {
               Avançar <ArrowRight className="w-4 h-4" />
             </button>
           </div>
-        </>
+        </div>
       )}
 
       {/* ──────────────────────────────────────────────────────────────────── */}
       {/* STEP 2 — Variáveis */}
       {/* ──────────────────────────────────────────────────────────────────── */}
       {step === 2 && (
-        <>
-          <div className="animate-scaleIn max-w-5xl w-full mx-auto mb-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto pb-4">
+            <div className="animate-scaleIn max-w-5xl w-full mx-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-              {/* Left: Mapping */}
-              <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-6 shadow-sm">
-                <h2 className="text-[18px] font-bold text-[#240B4B] mb-1">Mapeamento de Variáveis</h2>
-                <p className="text-sm text-gray-500 mb-6">Para cada variável do template, escolha a coluna da lista ou informe um valor fixo.</p>
+                {/* Left: Mapping */}
+                <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-6 shadow-sm">
+                  <h2 className="text-[18px] font-bold text-[#240B4B] mb-1">Mapeamento de Variáveis</h2>
+                  <p className="text-sm text-gray-500 mb-4">Para cada variável do template, escolha a coluna da lista ou informe um valor fixo.</p>
 
-                {templateVars.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400">
-                    <Check className="w-10 h-10 mx-auto mb-2 text-green-400" />
-                    <p className="font-semibold">Este template não tem variáveis!</p>
-                    <p className="text-sm">Nenhum mapeamento necessário.</p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-5">
-                    {templateVars.map(varName => {
-                      const mode = mappingMode[varName] || 'column';
-                      const cols = selectedList?.colunas || [];
-                      return (
-                        <div key={varName} className="flex flex-col gap-2">
-                          <label className="text-[#240B4B] text-sm font-bold flex items-center gap-2">
-                            <span className="bg-purple-100 text-[var(--color-primary)] px-2 py-0.5 rounded font-mono text-s">{`{{${varName}}}`}</span>
-                          </label>
+                  {templateVars.length === 0 ? (
+                    <div className="text-center py-8 text-gray-400">
+                      <Check className="w-10 h-10 mx-auto mb-2 text-green-400" />
+                      <p className="font-semibold">Este template não tem variáveis!</p>
+                      <p className="text-sm">Nenhum mapeamento necessário.</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-5">
+                      {templateVars.map(varName => {
+                        const mode = mappingMode[varName] || 'column';
+                        const cols = selectedList?.colunas || [];
+                        return (
+                          <div key={varName} className="flex flex-col gap-2">
+                            <label className="text-[#240B4B] text-sm font-bold flex items-center gap-2">
+                              <span className="bg-purple-100 text-[var(--color-primary)] px-2 py-0.5 rounded font-mono text-s">{`{{${varName}}}`}</span>
+                            </label>
 
-                          {/* Mode toggle */}
-                          <div className="flex rounded-lg border border-[#EAE2F5] overflow-hidden text-s font-bold">
-                            <button
-                              onClick={() => setMappingMode(prev => ({ ...prev, [varName]: 'column' }))}
-                              className={`flex-1 py-2 transition-colors ${mode === 'column' ? 'bg-[var(--color-primary)] text-white' : 'text-gray-500 hover:bg-gray-50'}`}
-                            >
-                              Coluna da lista
-                            </button>
-                            <button
-                              onClick={() => setMappingMode(prev => ({ ...prev, [varName]: 'fixed' }))}
-                              className={`flex-1 py-2 transition-colors ${mode === 'fixed' ? 'bg-[var(--color-primary)] text-white' : 'text-gray-500 hover:bg-gray-50'}`}
-                            >
-                              Valor fixo
-                            </button>
+                            {/* Mode toggle */}
+                            <div className="flex rounded-lg border border-[#EAE2F5] overflow-hidden text-s font-bold">
+                              <button
+                                onClick={() => setMappingMode(prev => ({ ...prev, [varName]: 'column' }))}
+                                className={`flex-1 py-2 transition-colors ${mode === 'column' ? 'bg-[var(--color-primary)] text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+                              >
+                                Coluna da lista
+                              </button>
+                              <button
+                                onClick={() => setMappingMode(prev => ({ ...prev, [varName]: 'fixed' }))}
+                                className={`flex-1 py-2 transition-colors ${mode === 'fixed' ? 'bg-[var(--color-primary)] text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+                              >
+                                Valor fixo
+                              </button>
+                            </div>
+
+                            {mode === 'column' ? (
+                              <CustomSelect
+                                value={mapping[varName] || ''}
+                                onChange={val => setMapping(prev => ({ ...prev, [varName]: val }))}
+                                placeholder="Selecione a coluna..."
+                                options={cols.map(col => ({ value: col, label: col }))}
+                                className="text-sm"
+                              />
+                            ) : (
+                              <input
+                                type="text"
+                                value={fixedValues[varName] || ''}
+                                onChange={e => setFixedValues(prev => ({ ...prev, [varName]: e.target.value }))}
+                                placeholder="Digite o valor fixo..."
+                                className="w-full px-3 py-2.5 border border-[#EAE2F5] rounded-lg focus:outline-none focus:border-[var(--color-primary)] transition-colors text-[#54456B] font-medium text-sm"
+                              />
+                            )}
                           </div>
-
-                          {mode === 'column' ? (
-                            <CustomSelect
-                              value={mapping[varName] || ''}
-                              onChange={val => setMapping(prev => ({ ...prev, [varName]: val }))}
-                              placeholder="Selecione a coluna..."
-                              options={cols.map(col => ({ value: col, label: col }))}
-                              className="text-sm"
-                            />
-                          ) : (
-                            <input
-                              type="text"
-                              value={fixedValues[varName] || ''}
-                              onChange={e => setFixedValues(prev => ({ ...prev, [varName]: e.target.value }))}
-                              placeholder="Digite o valor fixo..."
-                              className="w-full px-3 py-2.5 border border-[#EAE2F5] rounded-lg focus:outline-none focus:border-[var(--color-primary)] transition-colors text-[#54456B] font-medium text-sm"
-                            />
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Right: Preview */}
-              <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-6 shadow-sm flex flex-col">
-                <h2 className="text-[18px] font-bold text-[#240B4B] mb-1">Preview em Tempo Real</h2>
-                <p className="text-sm text-gray-500 mb-4">Substituindo com dados do 1º contato da lista</p>
-
-                <div className="flex-1 bg-gray-50 rounded-xl p-4 border border-gray-100">
-                  <div className="flex items-center gap-2 mb-4">
-                    <MessageSquare className="w-6 h-6 text-[var(--color-primary)]" />
-                    <span className="text-sm font-bold text-[#240B4B]">{selectedTemplate?.nome}</span>
-                  </div>
-                  <hr className="border-gray-200 mb-3" />
-                  <div className="text-md text-[#54456B] whitespace-pre-wrap leading-relaxed font-medium p-2">
-                    {previewText || selectedTemplate?.texto || '—'}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
-                {!firstContact && selectedList && (
-                  <p className="text-xs text-gray-400 mt-3 italic text-center">
-                    Nenhum contato encontrado na lista para o preview.
-                  </p>
-                )}
+                {/* Right: Preview */}
+                <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-6 shadow-sm flex flex-col">
+                  <h2 className="text-[18px] font-bold text-[#240B4B] mb-1">Preview em Tempo Real</h2>
+                  <p className="text-sm text-gray-500 mb-4">Substituindo com dados do 1º contato da lista</p>
+
+                  <div className="flex-1 bg-gray-50 rounded-xl p-4 border border-gray-100">
+                    <div className="flex items-center gap-2 mb-4">
+                      <MessageSquare className="w-6 h-6 text-[var(--color-primary)]" />
+                      <span className="text-sm font-bold text-[#240B4B]">{selectedTemplate?.nome}</span>
+                    </div>
+                    <hr className="border-gray-200 mb-3" />
+                    <div className="text-md text-[#54456B] whitespace-pre-wrap leading-relaxed font-medium p-2">
+                      {previewText || selectedTemplate?.texto || '—'}
+                    </div>
+                  </div>
+
+                  {!firstContact && selectedList && (
+                    <p className="text-xs text-gray-400 mt-3 italic text-center">
+                      Nenhum contato encontrado na lista para o preview.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
-
           </div>
-          {/* Rodapé FORA do card */}
-          <div className="flex justify-between items-center mt-8 pt-4 border-t border-gray-200 max-w-5xl mx-auto w-full">
+          {/* Rodapé fixo */}
+          <div className="flex justify-between items-center pt-4 border-t border-gray-200 max-w-5xl mx-auto w-full shrink-0">
             <button onClick={() => setStep(1)} className="flex items-center gap-2 px-4 py-2 h-[46px] rounded-lg border-2 border-[#EAE2F5] text-[#54456B] font-bold hover:bg-gray-50 transition-colors">
               <ArrowLeft className="w-4 h-4" /> Voltar
             </button>
@@ -753,87 +756,89 @@ export default function CampaignWizard() {
               Avançar <ArrowRight className="w-4 h-4" />
             </button>
           </div>
-        </>
+        </div>
       )}
 
       {/* ──────────────────────────────────────────────────────────────────── */}
       {/* STEP 3 — Agendamento */}
       {/* ──────────────────────────────────────────────────────────────────── */}
       {step === 3 && (
-        <>
-          <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-8 pb-10 mb-6 shadow-sm animate-scaleIn max-w-2xl w-full mx-auto">
-            <h2 className="text-[20px] font-bold text-[#240B4B] mb-6">Agendamento</h2>
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto pb-4">
+            <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-6 pb-6 shadow-sm animate-scaleIn max-w-2xl w-full mx-auto">
+              <h2 className="text-[20px] font-bold text-[#240B4B] mb-4">Agendamento</h2>
 
-            <div className="flex flex-col gap-4 mb-6">
-              {/* Disparar agora */}
-              <label className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${dispatchMode === 'now' ? 'border-[var(--color-primary)] bg-purple-50' : 'border-[#EAE2F5] hover:border-gray-300'
-                }`}>
-                <input
-                  type="radio"
-                  name="dispatchMode"
-                  value="now"
-                  checked={dispatchMode === 'now'}
-                  onChange={() => { setDispatchMode('now'); setScheduleError(''); }}
-                  className="mt-1 accent-[var(--color-primary)]"
-                />
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Zap className="w-4 h-4 text-amber-500" />
-                    <span className="font-bold text-[#240B4B]">Disparar agora</span>
+              <div className="flex flex-col gap-4 mb-4">
+                {/* Disparar agora */}
+                <label className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${dispatchMode === 'now' ? 'border-[var(--color-primary)] bg-purple-50' : 'border-[#EAE2F5] hover:border-gray-300'
+                  }`}>
+                  <input
+                    type="radio"
+                    name="dispatchMode"
+                    value="now"
+                    checked={dispatchMode === 'now'}
+                    onChange={() => { setDispatchMode('now'); setScheduleError(''); }}
+                    className="mt-1 accent-[var(--color-primary)]"
+                  />
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Zap className="w-4 h-4 text-amber-500" />
+                      <span className="font-bold text-[#240B4B]">Disparar agora</span>
+                    </div>
+                    <p className="text-sm text-gray-500">A campanha será iniciada imediatamente após a confirmação.</p>
                   </div>
-                  <p className="text-sm text-gray-500">A campanha será iniciada imediatamente após a confirmação.</p>
-                </div>
-              </label>
+                </label>
 
-              {/* Agendar */}
-              <label className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${dispatchMode === 'schedule' ? 'border-[var(--color-primary)] bg-purple-50' : 'border-[#EAE2F5] hover:border-gray-300'
-                }`}>
-                <input
-                  type="radio"
-                  name="dispatchMode"
-                  value="schedule"
-                  checked={dispatchMode === 'schedule'}
-                  onChange={() => setDispatchMode('schedule')}
-                  className="mt-1 accent-[var(--color-primary)]"
-                />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="w-4 h-4 text-blue-500" />
-                    <span className="font-bold text-[#240B4B]">Agendar para uma data específica</span>
+                {/* Agendar */}
+                <label className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${dispatchMode === 'schedule' ? 'border-[var(--color-primary)] bg-purple-50' : 'border-[#EAE2F5] hover:border-gray-300'
+                  }`}>
+                  <input
+                    type="radio"
+                    name="dispatchMode"
+                    value="schedule"
+                    checked={dispatchMode === 'schedule'}
+                    onChange={() => setDispatchMode('schedule')}
+                    className="mt-1 accent-[var(--color-primary)]"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Calendar className="w-4 h-4 text-blue-500" />
+                      <span className="font-bold text-[#240B4B]">Agendar para uma data específica</span>
+                    </div>
+                    <p className="text-sm text-gray-500 mb-3">Fuso horário: America/Sao_Paulo (UTC-3)</p>
+
+                    {dispatchMode === 'schedule' && (
+                      <input
+                        type="datetime-local"
+                        value={scheduledAt}
+                        min={localNowString()}
+                        onChange={e => { setScheduledAt(e.target.value); setScheduleError(''); }}
+                        className="w-full px-4 py-2.5 border border-[#EAE2F5] rounded-lg focus:outline-none focus:border-[var(--color-primary)] transition-colors text-[#54456B] font-medium"
+                      />
+                    )}
                   </div>
-                  <p className="text-sm text-gray-500 mb-3">Fuso horário: America/Sao_Paulo (UTC-3)</p>
+                </label>
+              </div>
 
-                  {dispatchMode === 'schedule' && (
-                    <input
-                      type="datetime-local"
-                      value={scheduledAt}
-                      min={localNowString()}
-                      onChange={e => { setScheduledAt(e.target.value); setScheduleError(''); }}
-                      className="w-full px-4 py-2.5 border border-[#EAE2F5] rounded-lg focus:outline-none focus:border-[var(--color-primary)] transition-colors text-[#54456B] font-medium"
-                    />
-                  )}
+              {/* Schedule error */}
+              {scheduleError && (
+                <div className="flex items-center gap-2 text-red-600 text-sm font-semibold mb-4 bg-red-50 px-4 py-2.5 rounded-lg border border-red-200">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  {scheduleError}
                 </div>
-              </label>
+              )}
+
+              {/* Summary */}
+              {dispatchMode === 'schedule' && scheduleDisplay && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-800 font-semibold">
+                  📅 Esta campanha será disparada em: <strong>{scheduleDisplay}</strong>
+                </div>
+              )}
+
             </div>
-
-            {/* Schedule error */}
-            {scheduleError && (
-              <div className="flex items-center gap-2 text-red-600 text-sm font-semibold mb-4 bg-red-50 px-4 py-2.5 rounded-lg border border-red-200">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                {scheduleError}
-              </div>
-            )}
-
-            {/* Summary */}
-            {dispatchMode === 'schedule' && scheduleDisplay && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-800 font-semibold mb-6">
-                📅 Esta campanha será disparada em: <strong>{scheduleDisplay}</strong>
-              </div>
-            )}
-
           </div>
-          {/* Rodapé FORA do card */}
-          <div className="flex justify-between items-center mt-8 pt-4 border-t border-gray-200 max-w-2xl mx-auto w-full">
+          {/* Rodapé fixo */}
+          <div className="flex justify-between items-center pt-4 border-t border-gray-200 max-w-2xl mx-auto w-full shrink-0">
             <button onClick={() => setStep(2)} className="flex items-center gap-2 px-4 py-2 h-[46px] rounded-lg border-2 border-[#EAE2F5] text-[#54456B] font-bold hover:bg-gray-50 transition-colors">
               <ArrowLeft className="w-4 h-4" /> Voltar
             </button>
@@ -844,77 +849,77 @@ export default function CampaignWizard() {
               Avançar <ArrowRight className="w-4 h-4" />
             </button>
           </div>
-        </>
+        </div>
       )}
 
       {/* ──────────────────────────────────────────────────────────────────── */}
       {/* STEP 4 — Revisão */}
       {/* ──────────────────────────────────────────────────────────────────── */}
       {step === 4 && (
-        <>
-          <div className="animate-scaleIn max-w-4xl w-full mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto pb-4">
+            <div className="animate-scaleIn max-w-4xl w-full mx-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-              {/* Summary */}
-              <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-6 shadow-sm">
-                <h2 className="text-[18px] font-bold text-[#240B4B] mb-4">Resumo</h2>
-                <div className="flex flex-col gap-4 mb-4">
-                  <SummaryRow icon={ClipboardList} label="Campanha" value={nome} />
-                  <SummaryRow icon={MessageSquare} label="Template" value={selectedTemplate?.nome} />
-                  <SummaryRow icon={Users} label="Lista" value={selectedList?.nome} />
-                  <SummaryRow
-                    icon={Calendar}
-                    label="Disparo"
-                    value={dispatchMode === 'now' ? 'Imediato' : (scheduleDisplay ? `Agendado: ${scheduleDisplay}` : '—')}
-                  />
+                {/* Summary */}
+                <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-6 shadow-sm">
+                  <h2 className="text-[18px] font-bold text-[#240B4B] mb-4">Resumo</h2>
+                  <div className="flex flex-col gap-4 mb-4">
+                    <SummaryRow icon={ClipboardList} label="Campanha" value={nome} />
+                    <SummaryRow icon={MessageSquare} label="Template" value={selectedTemplate?.nome} />
+                    <SummaryRow icon={Users} label="Lista" value={selectedList?.nome} />
+                    <SummaryRow
+                      icon={Calendar}
+                      label="Disparo"
+                      value={dispatchMode === 'now' ? 'Imediato' : (scheduleDisplay ? `Agendado: ${scheduleDisplay}` : '—')}
+                    />
+                  </div>
+
+                  {/* Mapping summary */}
+                  {templateVars.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-[#EAE2F5]">
+                      <p className="text-md font-semibold text-[#240B4B] mb-2">Mapeamento de variáveis:</p>
+                      <div className="flex flex-col">
+                        {Object.entries(finalMapping).map(([variavel, valor], idx) => (
+                          <div key={variavel}
+                            className="flex items-center gap-3 py-2"
+                            style={idx !== Object.entries(finalMapping).length - 1 ? { borderBottom: '1px solid #F3F4F6' } : {}}
+                          >
+                            <span
+                              className="text-sm font-mono px-2 py-0.5 rounded"
+                              style={{ color: '#7C3AED', backgroundColor: '#F3EEFF' }}
+                            >
+                              {`{{${variavel}}}`}
+                            </span>
+                            <span className="text-gray-300 text-sm shrink-0">→</span>
+                            <span className="text-sm font-semibold text-gray-800">{valor || '—'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Mapping summary */}
-                {templateVars.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-[#EAE2F5]">
-                    <p className="text-md font-semibold text-[#240B4B] mb-2">Mapeamento de variáveis:</p>
-                    <div className="flex flex-col">
-                      {Object.entries(finalMapping).map(([variavel, valor], idx) => (
-                        <div key={variavel}
-                          className="flex items-center gap-3 py-2"
-                          style={idx !== Object.entries(finalMapping).length - 1 ? { borderBottom: '1px solid #F3F4F6' } : {}}
-                        >
-                          <span
-                            className="text-sm font-mono px-2 py-0.5 rounded"
-                            style={{ color: '#7C3AED', backgroundColor: '#F3EEFF' }}
-                          >
-                            {`{{${variavel}}}`}
-                          </span>
-                          <span className="text-gray-300 text-sm shrink-0">→</span>
-                          <span className="text-sm font-semibold text-gray-800">{valor || '—'}</span>
-                        </div>
-                      ))}
+                {/* Message Preview */}
+                <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-6 shadow-sm flex flex-col">
+                  <h2 className="text-[18px] font-bold text-[#240B4B] mb-1">Preview da Mensagem</h2>
+                  <p className="text-xs text-gray-500 mb-4">Com dados do 1º contato da lista</p>
+                  <div className="flex-1 bg-gray-50 rounded-xl p-4 border border-gray-100">
+                    <div className="flex items-center gap-2 mb-4">
+                      <MessageSquare className="w-6 h-6 text-[var(--color-primary)]" />
+                      <span className="text-sm font-bold text-[#240B4B]">{selectedTemplate?.nome}</span>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Message Preview */}
-              <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-6 shadow-sm flex flex-col">
-                <h2 className="text-[18px] font-bold text-[#240B4B] mb-1">Preview da Mensagem</h2>
-                <p className="text-xs text-gray-500 mb-4">Com dados do 1º contato da lista</p>
-                <div className="flex-1 bg-gray-50 rounded-xl p-4 border border-gray-100">
-                  <div className="flex items-center gap-2 mb-4">
-                    <MessageSquare className="w-6 h-6 text-[var(--color-primary)]" />
-                    <span className="text-sm font-bold text-[#240B4B]">{selectedTemplate?.nome}</span>
-                  </div>
-                  <hr className="border-gray-200 mb-3" />
-                  <div className="text-sm text-[#54456B] whitespace-pre-wrap leading-relaxed font-medium p-2">
-                    {previewText || selectedTemplate?.texto || '—'}
+                    <hr className="border-gray-200 mb-3" />
+                    <div className="text-sm text-[#54456B] whitespace-pre-wrap leading-relaxed font-medium p-2">
+                      {previewText || selectedTemplate?.texto || '—'}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-
-            {/* Action buttons */}
           </div>
-          {/* Rodapé FORA dos cards */}
-          <div className="flex justify-between items-center mt-8 pt-4 border-t border-gray-200 max-w-4xl mx-auto w-full">
+          {/* Rodapé fixo */}
+          <div className="flex justify-between items-center pt-4 border-t border-gray-200 max-w-4xl mx-auto w-full shrink-0">
             <button
               onClick={() => setStep(3)}
               className="flex items-center gap-2 px-4 py-2 h-[46px] rounded-lg border-2 border-[#EAE2F5] text-[#54456B] font-bold hover:bg-gray-50 transition-colors"
@@ -946,7 +951,7 @@ export default function CampaignWizard() {
               </button>
             </div>
           </div>
-        </>
+        </div>
       )}
 
     </div>
