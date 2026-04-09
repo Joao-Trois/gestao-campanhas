@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -12,8 +12,65 @@ import {
   Shield,
   CheckCircle2,
   XCircle,
-  RefreshCw
+  RefreshCw,
+  ChevronDown
 } from 'lucide-react';
+
+// ─── CustomSelect ──────────────────────────────────────────────────────────
+function CustomSelect({ value, onChange, options, placeholder, className = "" }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(opt => opt.value === value);
+
+  return (
+    <div className={`relative ${className}`} ref={containerRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-white border border-[#EAE2F5] rounded-lg focus:outline-none focus:border-[var(--color-primary)] transition-colors text-[#54456B] font-medium text-left"
+      >
+        <span className={!selectedOption ? "text-gray-400" : ""}>
+          {selectedOption ? selectedOption.label : placeholder}
+        </span>
+        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-1.5 w-full bg-white border border-[#EAE2F5] rounded-xl shadow-lg z-50 py-2 overflow-hidden animate-fadeIn">
+          <div className="max-h-60 overflow-y-auto">
+            {options.map(opt => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${value === opt.value
+                  ? 'bg-purple-50 text-[var(--color-primary)]'
+                  : 'text-[#54456B] hover:bg-gray-50'
+                  }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const SETTINGS_KEYS = [
   'n8n_webhook_base_url',
@@ -38,6 +95,7 @@ export default function Settings() {
 
   // Users Management State
   const [users, setUsers] = useState([]);
+  const [grupos, setGrupos] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
 
@@ -48,30 +106,27 @@ export default function Settings() {
   async function fetchData() {
     setLoading(true);
     try {
-      // 1. Fetch System Settings
-      const { data: settingsData, error: settingsError } = await supabase
-        .from('configuracoes')
-        .select('*')
-        .in('chave', SETTINGS_KEYS);
+      const [
+        { data: settingsData, error: settingsError },
+        { data: usersData, error: usersError },
+        { data: gruposData },
+      ] = await Promise.all([
+        supabase.from('configuracoes').select('*').in('chave', SETTINGS_KEYS),
+        supabase.from('profiles').select('*').order('nome'),
+        supabase.from('grupos').select('id, nome').eq('ativo', true).order('nome'),
+      ]);
 
       if (settingsError) throw settingsError;
+      if (usersError) throw usersError;
 
       const settingsMap = {};
       settingsData.forEach(s => {
         settingsMap[s.chave] = s.valor || '';
       });
 
-      // Merge with initial keys to ensure all inputs receive at least an empty string
       setSystemSettings(prev => ({ ...prev, ...settingsMap }));
-
-      // 2. Fetch Users
-      const { data: usersData, error: usersError } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('nome');
-
-      if (usersError) throw usersError;
       setUsers(usersData);
+      if (gruposData) setGrupos(gruposData);
 
     } catch (error) {
       console.error('Error fetching settings data:', error.message);
@@ -110,7 +165,6 @@ export default function Settings() {
 
       if (error) throw error;
 
-      // Update local state without re-fetching everything
       setUsers(users.map(u => u.id === userId ? { ...u, ativo: !currentStatus } : u));
     } catch (error) {
       alert('Erro ao alterar status do usuário: ' + error.message);
@@ -268,6 +322,7 @@ export default function Settings() {
                 <thead>
                   <tr className="bg-gray-50/50">
                     <th className="px-6 py-4 text-left text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">Nome</th>
+                    <th className="px-6 py-4 text-left text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">Grupo</th>
                     <th className="px-6 py-4 text-left text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">Nível</th>
                     <th className="px-6 py-4 text-left text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">Status</th>
                     <th className="px-6 py-4 text-right text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">Ações</th>
@@ -278,6 +333,11 @@ export default function Settings() {
                     <tr key={u.id} className="hover:bg-gray-50/30 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-primary)] font-medium">
                         {u.nome}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {grupos.find(g => g.id === u.grupo_id)?.nome || (
+                          <span className="text-gray-300 italic">—</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${u.role === 'admin'
@@ -307,7 +367,6 @@ export default function Settings() {
                             <Edit2 className="w-4 h-4" />
                           </button>
 
-                          {/* Impede que o próprio usuário logado desative a si mesmo */}
                           {profile?.id !== u.id && (
                             <button
                               onClick={() => toggleUserStatus(u.id, u.ativo)}
@@ -340,6 +399,7 @@ export default function Settings() {
           }}
           onSave={fetchData}
           user={editingUser}
+          grupos={grupos}
         />
       )}
     </div>
@@ -347,12 +407,13 @@ export default function Settings() {
 }
 
 // Modal Component
-function UserModal({ isOpen, onClose, onSave, user }) {
+function UserModal({ isOpen, onClose, onSave, user, grupos }) {
   const [formData, setFormData] = useState({
     nome: user?.nome || '',
     email: user?.email || '',
     password: '',
     role: user?.role || 'usuario',
+    grupo_id: user?.grupo_id || '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -368,7 +429,8 @@ function UserModal({ isOpen, onClose, onSave, user }) {
           .from('profiles')
           .update({
             nome: formData.nome,
-            role: formData.role
+            role: formData.role,
+            grupo_id: formData.grupo_id || null,
           })
           .eq('id', user.id);
 
@@ -376,9 +438,12 @@ function UserModal({ isOpen, onClose, onSave, user }) {
       } else {
         // Create User - Chama Edge Function para o bypass seguro da SERVICE_ROLE
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         const { data, error } = await supabase.functions.invoke('create-user', {
-          body: formData,
+          body: {
+            ...formData,
+            grupo_id: formData.grupo_id || null,
+          },
           headers: {
             Authorization: `Bearer ${session.access_token}`
           }
@@ -387,8 +452,8 @@ function UserModal({ isOpen, onClose, onSave, user }) {
         if (error) throw error;
       }
 
-      onSave(); // Refresh data
-      onClose(); // Close Modal
+      onSave();
+      onClose();
     } catch (error) {
       alert('Erro: ' + error.message);
     } finally {
@@ -403,8 +468,8 @@ function UserModal({ isOpen, onClose, onSave, user }) {
         onClick={onClose}
       />
 
-      <div className="relative bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-scaleIn">
-        <div className="p-6 border-b border-[#F3F4F6] bg-[#F9FAFB] flex items-center justify-between">
+      <div className="relative bg-white w-full max-w-md rounded-2xl shadow-2xl animate-scaleIn">
+        <div className="p-6 border-b border-[#F3F4F6] bg-[#F9FAFB] flex items-center justify-between rounded-t-2xl">
           <h3 className="text-lg font-bold text-[var(--color-text-primary)] flex items-center gap-2">
             {user ? <Edit2 className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
             {user ? 'Editar Equipista' : 'Novo Equipista'}
@@ -435,7 +500,7 @@ function UserModal({ isOpen, onClose, onSave, user }) {
             </label>
             <input
               required
-              disabled={!!user} // Não é possível mudar email via profile UI facilmente sem confirmação auth
+              disabled={!!user}
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -497,6 +562,22 @@ function UserModal({ isOpen, onClose, onSave, user }) {
                 Admin
               </button>
             </div>
+          </div>
+
+          {/* Grupo */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">
+              Grupo
+            </label>
+            <CustomSelect
+              value={formData.grupo_id}
+              onChange={(val) => setFormData({ ...formData, grupo_id: val })}
+              placeholder="Sem grupo"
+              options={[
+                { value: '', label: 'Sem grupo' },
+                ...grupos.map(g => ({ value: g.id, label: g.nome }))
+              ]}
+            />
           </div>
 
           <div className="pt-4">
