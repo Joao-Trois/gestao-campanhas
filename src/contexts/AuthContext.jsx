@@ -71,6 +71,10 @@ export const AuthProvider = ({ children }) => {
         await fetchProfile(session.user.id);
       } else {
         setProfile(null);
+        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+          localStorage.clear();
+          window.location.href = '/login';
+        }
       }
       setLoading(false);
     });
