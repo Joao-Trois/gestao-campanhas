@@ -258,7 +258,7 @@ export default function Templates() {
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1 pr-4">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <div className={`flex items-center gap-2 flex-wrap ${template.meta_status === 'recusado' ? 'mb-2' : 'mb-1'}`}>
                       <h3 className="font-bold text-[18px] text-[var(--color-text-main)]">
                         {template.nome}
                       </h3>
@@ -276,6 +276,14 @@ export default function Templates() {
                         <span className="bg-amber-100 text-amber-800 text-[11px] py-1 px-2 font-bold rounded-full">⏳ Pendente</span>
                       )}
                     </div>
+                    {template.meta_status === 'recusado' && (
+                      <div className="flex items-start gap-2 mt-2 mb-2 p-3 rounded-lg bg-red-50 border border-red-200 animate-slideInUp">
+                        <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                        <p className={`text-xs font-medium text-red-700 ${!template.meta_status_motivo ? 'opacity-60' : ''}`}>
+                          {template.meta_status_motivo || 'Motivo não informado pela Meta.'}
+                        </p>
+                      </div>
+                    )}
                     {template.meta_template_id && (
                       <p className="text-xs text-gray-500 font-mono">Meta ID: {template.meta_template_id}</p>
                     )}

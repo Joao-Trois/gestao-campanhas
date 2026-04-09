@@ -54,19 +54,31 @@ function Stepper({ current }) {
 
 function CustomSelect({ value, onChange, options, placeholder, className = "" }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
   const containerRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
         setIsOpen(false);
+        setSearch('');
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (isOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isOpen]);
+
   const selectedOption = options.find(opt => opt.value === value);
+  const filteredOptions = search
+    ? options.filter(opt => opt.label.toLowerCase().includes(search.toLowerCase()))
+    : options;
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
@@ -82,24 +94,48 @@ function CustomSelect({ value, onChange, options, placeholder, className = "" })
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1.5 w-full bg-white border border-[#EAE2F5] rounded-xl shadow-lg z-50 py-2 overflow-hidden animate-fadeIn">
-          <div className="max-h-60 overflow-y-auto">
-            {options.map(opt => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => {
-                  onChange(opt.value);
-                  setIsOpen(false);
-                }}
-                className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${value === opt.value
-                  ? 'bg-purple-50 text-[var(--color-primary)]'
-                  : 'text-[#54456B] hover:bg-gray-50'
-                  }`}
-              >
-                {opt.label}
-              </button>
-            ))}
+        <div className="absolute top-full left-0 mt-1.5 w-full bg-white border border-[#EAE2F5] rounded-xl shadow-lg z-50 overflow-hidden animate-fadeIn">
+          <input
+            ref={searchInputRef}
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            onClick={e => e.stopPropagation()}
+            placeholder="Buscar…"
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              border: 'none',
+              borderBottom: '1px solid #EAE2F5',
+              outline: 'none',
+              fontSize: '14px',
+              fontFamily: 'inherit',
+              color: '#54456B',
+              background: 'white',
+            }}
+          />
+          <div className="max-h-60 overflow-y-auto py-2">
+            {filteredOptions.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-4">Nenhum resultado encontrado.</p>
+            ) : (
+              filteredOptions.map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(opt.value);
+                    setIsOpen(false);
+                    setSearch('');
+                  }}
+                  className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${value === opt.value
+                    ? 'bg-purple-50 text-[var(--color-primary)]'
+                    : 'text-[#54456B] hover:bg-gray-50'
+                    }`}
+                >
+                  {opt.label}
+                </button>
+              ))
+            )}
           </div>
         </div>
       )}
@@ -564,24 +600,15 @@ export default function CampaignWizard() {
                   </button>
                 ))}
               </div>
-              <div className="flex flex-col gap-2 max-h-52 overflow-y-auto pr-1">
-                {filteredTemplates.length === 0 && (
-                  <p className="text-sm text-gray-400 text-center py-4">Nenhum template aprovado encontrado.</p>
-                )}
-                {filteredTemplates.map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => setSelectedTemplate(t)}
-                    className={`w-full text-left px-4 py-3 rounded-lg border transition-all ${selectedTemplate?.id === t.id
-                      ? 'border-[var(--color-primary)] bg-purple-50 text-[var(--color-primary)]'
-                      : 'border-[#EAE2F5] bg-white text-[#54456B] hover:border-[var(--color-primary)]'
-                      }`}
-                  >
-                    <p className="font-bold text-sm">{t.nome}</p>
-                    {t.descricao && <p className="text-xs opacity-70 mt-0.5 line-clamp-1">{t.descricao}</p>}
-                  </button>
-                ))}
-              </div>
+              <CustomSelect
+                value={selectedTemplate?.id || ''}
+                onChange={val => {
+                  const found = templates.find(t => t.id === val);
+                  setSelectedTemplate(found || null);
+                }}
+                placeholder="Selecione um template..."
+                options={filteredTemplates.map(t => ({ value: t.id, label: t.nome }))}
+              />
             </div>
 
             {/* Lista */}
