@@ -20,12 +20,10 @@ export const AuthProvider = ({ children }) => {
   // Função isolada e protegida com try/catch
   const fetchProfile = async (userId) => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
-        .timeout(5000); // 5 segundos
+      const { data, error } = await Promise.race([
+        supabase.from('profiles').select('*').eq('id', userId).single(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+      ]);
 
       if (error) throw error;
       setProfile(data);
