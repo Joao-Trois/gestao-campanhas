@@ -54,9 +54,20 @@ export const AuthProvider = ({ children }) => {
       }
       lastEvent = event;
 
+      // Logout real — zera tudo e redireciona
+      if (event === 'SIGNED_OUT') {
+        setProfile(null);
+        setUser(null);
+        setSession(null);
+        localStorage.clear();
+        window.location.href = '/login';
+        return;
+      }
+
+      // Refresh de token — só atualiza sessão, preserva profile
       if (event === 'TOKEN_REFRESHED') {
         setSession(session);
-        return; // não precisa rebuscar o profile
+        return;
       }
 
       setSession(session);
@@ -64,12 +75,9 @@ export const AuthProvider = ({ children }) => {
 
       try {
         if (session?.user) {
-          await fetchProfile(session.user.id);
-        } else {
-          setProfile(null);
-          if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-            localStorage.clear();
-            window.location.href = '/login';
+          // Só busca o profile se ainda não tiver um carregado
+          if (!profile) {
+            await fetchProfile(session.user.id);
           }
         }
       } finally {
