@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Plus, Tag as TagIcon, Trash2, Edit2, X, Check, AlertCircle } from 'lucide-react';
+import { SkeletonBlock } from '../components/Skeleton';
 
 const PREDEFINED_COLORS = [
   '#6C3FC8', '#FF4B4B', '#FF9F1C', '#F4E23C',
@@ -163,7 +164,23 @@ export default function Tags() {
       {/* Main Content Area */}
       <div className="flex-1 px-[26px] overflow-y-auto pb-8">
         {loading ? (
-          <p className="text-[var(--color-text-main)] font-medium">Carregando...</p>
+          <div className="flex flex-col gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-lg p-4 flex items-center justify-between shadow-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <SkeletonBlock className="w-4 h-4 rounded-full" />
+                  <SkeletonBlock className="h-4 w-28" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <SkeletonBlock className="w-8 h-8 rounded-md" />
+                  <SkeletonBlock className="w-8 h-8 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : tags.length === 0 ? (
           <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-lg p-8 text-center shadow-sm">
             <TagIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />

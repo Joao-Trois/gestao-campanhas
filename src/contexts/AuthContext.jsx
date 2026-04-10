@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data, error } = await Promise.race([
         supabase.from('profiles').select('*').eq('id', userId).single(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
       ]);
 
       if (error) throw error;

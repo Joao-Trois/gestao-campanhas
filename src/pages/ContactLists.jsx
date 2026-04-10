@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Plus, Users, Search, Trash2, ExternalLink, Calendar, AlertCircle, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { SkeletonBlock } from '../components/Skeleton';
 
 export default function ContactLists() {
   const [lists, setLists] = useState([]);
@@ -132,7 +133,29 @@ export default function ContactLists() {
       {/* Grid */}
       <div className="flex-1 px-[26px] overflow-y-auto pb-8">
         {loading ? (
-          <p className="text-[#54456B] font-medium">Carregando listas...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-white border border-[#EAE2F5] rounded-xl p-5 shadow-sm flex flex-col gap-4"
+              >
+                <div className="flex justify-between items-start">
+                  <SkeletonBlock className="w-11 h-11 rounded-lg" />
+                  <div className="flex items-center gap-1">
+                    <SkeletonBlock className="w-8 h-8 rounded-md" />
+                    <SkeletonBlock className="w-8 h-8 rounded-md" />
+                  </div>
+                </div>
+                <div>
+                  <SkeletonBlock className="h-5 w-3/4 mb-2" />
+                  <div className="flex items-center gap-4">
+                    <SkeletonBlock className="h-3 w-20" />
+                    <SkeletonBlock className="h-3 w-24" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : filteredLists.length === 0 ? (
           <div className="bg-white border border-[#EAE2F5] rounded-xl p-12 text-center animate-scaleIn">
             <Users className="w-16 h-16 text-gray-200 mx-auto mb-4" />

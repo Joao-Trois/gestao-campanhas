@@ -7,6 +7,7 @@ import {
   ChevronRight, MoreVertical, Pencil, Trash2, Eye
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { SkeletonBlock } from '../components/Skeleton';
 
 // ─── Status config ────────────────────────────────────────────────────────────
 const STATUS_CONFIG = {
@@ -315,7 +316,28 @@ export default function Campaigns() {
       {/* Content */}
       <div className="flex-1 px-[26px] overflow-y-auto pb-8">
         {loading ? (
-          <p className="text-[var(--color-text-main)] font-medium">Carregando campanhas...</p>
+          <div className="flex flex-col gap-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-5 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <SkeletonBlock className="w-9 h-9 rounded-lg" />
+                    <SkeletonBlock className="h-5 w-44" />
+                    <SkeletonBlock className="h-6 w-24 rounded-full" />
+                  </div>
+                  <SkeletonBlock className="w-8 h-8 rounded-lg" />
+                </div>
+                <div className="flex flex-wrap gap-x-6 gap-y-1.5 pl-[52px]">
+                  <SkeletonBlock className="h-3 w-28" />
+                  <SkeletonBlock className="h-3 w-24" />
+                  <SkeletonBlock className="h-3 w-36" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : filtered.length === 0 ? (
           <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-12 text-center animate-scaleIn">
             <Megaphone className="w-16 h-16 text-gray-200 mx-auto mb-4" />

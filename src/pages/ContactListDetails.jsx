@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Trash2
 } from 'lucide-react';
+import { SkeletonBlock } from '../components/Skeleton';
 
 export default function ContactListDetails() {
   const { id } = useParams();
@@ -71,8 +72,56 @@ export default function ContactListDetails() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-[var(--color-bg-page)] text-[#8144E2] font-medium animate-fadeIn">
-        Carregando detalhes da lista...
+      <div className="flex-1 flex flex-col pt-8 pb-10 px-[26px] h-full overflow-hidden animate-fadeIn">
+        {/* Back button skeleton */}
+        <SkeletonBlock className="h-4 w-36 mb-6" />
+
+        {/* Title area skeleton */}
+        <div className="flex justify-between items-end mb-8">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <SkeletonBlock className="h-9 w-64" />
+              <SkeletonBlock className="h-7 w-24 rounded-full" />
+            </div>
+            <SkeletonBlock className="h-3 w-48" />
+          </div>
+          <SkeletonBlock className="h-[42px] w-36 rounded-lg" />
+        </div>
+
+        {/* Table skeleton */}
+        <div className="bg-white border border-[#EAE2F5] rounded-xl shadow-sm flex-1 flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-[#EAE2F5] bg-gray-50/50 flex gap-4 items-center">
+            <SkeletonBlock className="h-9 w-60 rounded-lg" />
+          </div>
+          <div className="flex-1 overflow-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <th key={i} className="px-6 py-4 bg-gray-50/80">
+                      <SkeletonBlock className="h-3 w-20" />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#EAE2F5]">
+                {Array.from({ length: 8 }).map((_, row) => (
+                  <tr key={row}>
+                    {Array.from({ length: 5 }).map((_, col) => (
+                      <td key={col} className="px-6 py-4">
+                        <SkeletonBlock className={`h-4 ${col === 0 ? 'w-28' : 'w-20'}`} />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="p-4 border-t border-[#EAE2F5] bg-white flex justify-between items-center">
+            <SkeletonBlock className="h-3 w-40" />
+            <SkeletonBlock className="h-3 w-32" />
+          </div>
+        </div>
       </div>
     );
   }

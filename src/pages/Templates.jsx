@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Plus, Search, Archive, ArchiveRestore, Eye, MessageSquare, AlertCircle, ChevronRight, Trash2, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { SkeletonBlock } from '../components/Skeleton';
 
 export default function Templates() {
   const [templates, setTemplates] = useState([]);
@@ -243,7 +244,36 @@ export default function Templates() {
       {/* Main Content */}
       <div className="flex-1 px-[26px] overflow-y-auto pb-8">
         {loading ? (
-          <p className="text-[var(--color-text-main)] font-medium">Carregando...</p>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-lg p-5 flex flex-col gap-4 shadow-sm"
+              >
+                <div className="flex justify-between items-start">
+                  <div className="flex-1 pr-4">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <SkeletonBlock className="h-5 w-40" />
+                      <SkeletonBlock className="h-5 w-20 rounded-full" />
+                      <SkeletonBlock className="h-5 w-24 rounded-full" />
+                    </div>
+                    <SkeletonBlock className="h-3 w-32 mt-2" />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <SkeletonBlock className="w-8 h-8 rounded-md" />
+                    <SkeletonBlock className="w-8 h-8 rounded-md" />
+                  </div>
+                </div>
+                <SkeletonBlock className="h-4 w-full" />
+                <SkeletonBlock className="h-4 w-2/3" />
+                <div className="flex flex-wrap gap-2 mt-auto">
+                  <SkeletonBlock className="h-6 w-16 rounded-md" />
+                  <SkeletonBlock className="h-6 w-20 rounded-md" />
+                  <SkeletonBlock className="h-6 w-14 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : filteredTemplates.length === 0 ? (
           <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-lg p-8 text-center shadow-sm animate-scaleIn">
             <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-3" />

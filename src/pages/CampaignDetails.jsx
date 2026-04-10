@@ -6,6 +6,7 @@ import {
   Calendar, ClipboardList, Check, AlertCircle,
   Clock, Zap, Info, ChevronRight, User
 } from 'lucide-react';
+import { SkeletonBlock } from '../components/Skeleton';
 
 // ─── Status config (Consistent with Campaigns.jsx) ────────────────────────────
 const STATUS_CONFIG = {
@@ -119,10 +120,105 @@ export default function CampaignDetails() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-purple-200 border-t-[var(--color-primary)] rounded-full animate-spin" />
-          <p className="text-gray-500 font-medium">Carregando detalhes...</p>
+      <div className="flex-1 flex flex-col pt-8 pb-10 relative h-full overflow-y-auto animate-fadeIn">
+        {/* Header skeleton */}
+        <div className="px-[26px] mb-8 flex flex-col gap-2 flex-shrink-0">
+          <SkeletonBlock className="h-4 w-40 mb-2" />
+          <div className="flex items-center gap-4">
+            <SkeletonBlock className="w-12 h-12 rounded-xl" />
+            <div>
+              <SkeletonBlock className="h-8 w-64 mb-2" />
+              <div className="flex items-center gap-3">
+                <SkeletonBlock className="h-6 w-24 rounded-full" />
+                <SkeletonBlock className="h-4 w-20" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-[26px] grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left column skeleton */}
+          <div className="lg:col-span-1 flex flex-col gap-8">
+            {/* Summary card */}
+            <div className="bg-[var(--color-bg-card)] border border-gray-100 rounded-xl p-6 shadow-sm">
+              <SkeletonBlock className="h-5 w-48 mb-4" />
+              <div className="flex flex-col gap-5">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <SkeletonBlock className="w-9 h-9 rounded-md" />
+                    <div>
+                      <SkeletonBlock className="h-3 w-28 mb-1" />
+                      <SkeletonBlock className="h-4 w-36" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Preview card */}
+            <div className="bg-[var(--color-bg-card)] border border-gray-100 rounded-xl p-6 shadow-sm">
+              <SkeletonBlock className="h-5 w-44 mb-4" />
+              <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                <SkeletonBlock className="h-4 w-full mb-2" />
+                <SkeletonBlock className="h-4 w-5/6 mb-2" />
+                <SkeletonBlock className="h-4 w-2/3" />
+              </div>
+            </div>
+          </div>
+
+          {/* Right column skeleton */}
+          <div className="lg:col-span-2 flex flex-col gap-8">
+            {/* Stats dashboard */}
+            <div className="bg-[var(--color-bg-card)] border border-gray-100 rounded-xl p-6 shadow-sm">
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <SkeletonBlock className="h-6 w-48 mb-2" />
+                  <SkeletonBlock className="h-3 w-64" />
+                </div>
+                <SkeletonBlock className="h-16 w-48 rounded-2xl" />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex flex-col gap-3">
+                    <div className="flex items-center gap-3 pb-3 mb-1" style={{ borderBottom: '1px solid #F3F4F6' }}>
+                      <SkeletonBlock className="w-9 h-9 rounded-lg" />
+                      <SkeletonBlock className="h-3 w-16" />
+                    </div>
+                    <SkeletonBlock className="h-5 w-10 mt-1" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Delivery table */}
+            <div className="bg-[var(--color-bg-card)] border border-gray-100 rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col min-h-[400px]">
+              <div className="px-6 py-4 bg-gray-50/30" style={{ borderBottom: '1px solid #F3F4F6' }}>
+                <SkeletonBlock className="h-5 w-32" />
+              </div>
+              <div className="flex-1 overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50" style={{ borderBottom: '1px solid #F3F4F6' }}>
+                      {['w-28', 'w-16', 'w-32', 'w-20'].map((w, i) => (
+                        <th key={i} className="px-6 py-3">
+                          <SkeletonBlock className={`h-3 ${w}`} />
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.from({ length: 6 }).map((_, row) => (
+                      <tr key={row} style={row !== 5 ? { borderBottom: '1px solid #F3F4F6' } : {}}>
+                        <td className="px-6 py-4"><SkeletonBlock className="h-4 w-28" /></td>
+                        <td className="px-6 py-4"><SkeletonBlock className="h-5 w-16 rounded" /></td>
+                        <td className="px-6 py-4"><SkeletonBlock className="h-3 w-32" /></td>
+                        <td className="px-6 py-4"><SkeletonBlock className="h-3 w-14" /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
