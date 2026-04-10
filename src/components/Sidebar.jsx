@@ -25,14 +25,13 @@ export default function Sidebar() {
     { name: 'Tags', path: '/tags', icon: Tags },
   ];
 
-  // Mantém visível enquanto carrega (null) e só esconde se for explicitamente diferente de admin
-  if (profile === null || profile?.role === 'admin') {
+  // Mostra enquanto carrega (!profile?.role) e mantém se for admin
+  if (!profile?.role || profile.role === 'admin') {
     menuItems.push({ name: 'Configurações', path: '/configuracoes', icon: SettingsIcon });
   }
 
   return (
     <div className="w-[260px] h-screen bg-[var(--color-sidebar)] flex flex-col py-8 px-4 gap-4 flex-shrink-0">
-
       <div className="flex items-center gap-3 px-2 mb-4">
         <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
           <MessageSquare className="w-6 h-6 text-white" />

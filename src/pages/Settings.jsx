@@ -99,6 +99,128 @@ export default function Settings() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
 
+  // ── ESTADOS E LÓGICA: Gestão de Cotas Mensais ──
+  const [cotas, setCotas] = useState([]);
+  const [isCotaModalOpen, setIsCotaModalOpen] = useState(false);
+  const [editingGrupoCota, setEditingGrupoCota] = useState(null);
+  const [cotaValor, setCotaValor] = useState('');
+  const [isCotaLoading, setIsCotaLoading] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  function showToast(type, message) {
+    setToast({ type, message });
+    setTimeout(() => setToast(null), 5000);
+  }
+
+  const hoje = new Date();
+  const mesAtual = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const dataFormatadaMesAtual = mesAtual.toISOString().split('T')[0];
+
+  const mesAnterior = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+  const dataFormatadaMesAnterior = mesAnterior.toISOString().split('T')[0];
+
+  const formatterBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  const formatterMesAno = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' });
+
+  const fetchCotas = async () => {
+    try {
+      const { data, error } = await supabase.from('cotas').select('*');
+      if (error) throw error;
+      setCotas(data || []);
+    } catch (err) {
+      console.error('Erro ao carregar cotas: ' + err.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchCotas();
+  }, []);
+
+  const handleSaveCota = async (e) => {
+    e.preventDefault();
+    setIsCotaLoading(true);
+
+    try {
+      const valorNum = parseFloat(cotaValor.toString().replace(/,/g, '.'));
+      if (isNaN(valorNum)) throw new Error('O valor informado é inválido.');
+
+      const cotaExistente = cotas.find(
+        c => c.grupo_id === editingGrupoCota.id && c.mes_referencia === dataFormatadaMesAtual
+      );
+
+      let error;
+      if (cotaExistente) {
+        ({ error } = await supabase
+          .from('cotas')
+          .update({ valor_limite: valorNum })
+          .eq('id', cotaExistente.id));
+      } else {
+        ({ error } = await supabase
+          .from('cotas')
+          .insert({
+            grupo_id: editingGrupoCota.id,
+            valor_limite: valorNum,
+            periodo: 'mensal',
+            mes_referencia: dataFormatadaMesAtual,
+            ativo: true
+          }));
+      }
+      if (error) throw error;
+
+      showToast('success', 'Cota configurada com sucesso!');
+      fetchCotas();
+      setIsCotaModalOpen(false);
+    } catch (err) {
+      const msg = err.message?.includes('row-level security') 
+        ? 'Erro de permissões (RLS) ao processar cota.' 
+        : err.message;
+      showToast('error', 'Falha ao salvar: ' + msg);
+    } finally {
+      setIsCotaLoading(false);
+    }
+  };
+
+  const handleClonarMesAnterior = async () => {
+    if (!window.confirm("Deseja clonar os limites do mês passado para os grupos que ainda não possuem cota para este mês?")) return;
+
+    setIsCotaLoading(true);
+    try {
+      const { data: cotasMesAnterior, error: errBusca } = await supabase
+        .from('cotas')
+        .select('*')
+        .eq('mes_referencia', dataFormatadaMesAnterior)
+        .eq('ativo', true);
+      if (errBusca) throw errBusca;
+
+      const gruposSemCota = cotasMesAnterior.filter(c =>
+        !cotas.find(ca => ca.grupo_id === c.grupo_id && ca.mes_referencia === dataFormatadaMesAtual)
+      );
+
+      if (gruposSemCota.length === 0) {
+        showToast('success', 'Todos os grupos já têm cota para este mês.');
+        return;
+      }
+
+      const novasCotas = gruposSemCota.map(c => ({
+        grupo_id: c.grupo_id,
+        valor_limite: c.valor_limite,
+        periodo: 'mensal',
+        mes_referencia: dataFormatadaMesAtual,
+        ativo: true
+      }));
+
+      const { error: errInsert } = await supabase.from('cotas').insert(novasCotas);
+      if (errInsert) throw errInsert;
+
+      showToast('success', 'Cotas passadas foram clonadas com sucesso!');
+      fetchCotas();
+    } catch (err) {
+      showToast('error', 'Erro ao clonar: ' + err.message);
+    } finally {
+      setIsCotaLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -388,6 +510,82 @@ export default function Settings() {
             </div>
           </div>
         </div>
+
+        {/* ── SEÇÃO: Gestão de Cotas Mensais ── */}
+        <div className="lg:col-span-12 space-y-6">
+          <div className="bg-[#fcfbfd] rounded-2xl shadow-sm border border-[var(--color-border)] overflow-hidden">
+            <div className="p-6 border-b border-[var(--color-border)] bg-white flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-bold text-[var(--color-text-main)] flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-[var(--color-primary)]" />
+                  Gestão de Cotas de Envios / Módulo Mensal
+                </h2>
+                <p className="mt-1 text-xs text-gray-500 font-medium">Ciclo de faturamento: <span className="capitalize">{formatterMesAno.format(mesAtual)}</span></p>
+              </div>
+
+              <button
+                onClick={handleClonarMesAnterior}
+                className="px-4 py-2 bg-white text-[var(--color-text-main)] border border-[var(--color-border)] rounded-lg text-xs font-bold hover:bg-gray-50 hover:text-[var(--color-primary)] transition-all flex items-center gap-1.5 shadow-sm"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isCotaLoading ? 'animate-spin' : ''}`} />
+                Clonar mês anterior
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-50/50">
+                    <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Grupo</th>
+                    <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Mês Vigente</th>
+                    <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Limite em R$</th>
+                    <th className="px-6 py-4 text-right text-[10px] font-bold text-gray-500 uppercase tracking-wider">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#F3F4F6]">
+                  {grupos.map((grupo) => {
+                    const cotaAtual = cotas.find(c => c.grupo_id === grupo.id && c.mes_referencia === dataFormatadaMesAtual);
+
+                    return (
+                      <tr key={grupo.id} className="hover:bg-purple-50/30 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-main)] font-bold">
+                          {grupo.nome}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
+                          {formatterMesAno.format(mesAtual)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {cotaAtual ? (
+                            <span className="font-semibold text-[var(--color-text-main)]">
+                              {formatterBRL.format(cotaAtual.valor_limite)}
+                            </span>
+                          ) : (
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-gray-100 text-gray-500">
+                              Sem cota
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                          <button
+                            onClick={() => {
+                              setEditingGrupoCota(grupo);
+                              setCotaValor(cotaAtual ? cotaAtual.valor_limite : '');
+                              setIsCotaModalOpen(true);
+                            }}
+                            className="px-3 py-1.5 text-xs font-bold text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 rounded-lg transition-colors inline-flex items-center gap-1.5"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                            {cotaAtual ? 'Editar' : 'Definir'}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
 
       {isModalOpen && (
@@ -401,6 +599,74 @@ export default function Settings() {
           user={editingUser}
           grupos={grupos}
         />
+      )}
+
+      {/* Toast Notification global do Settings */}
+      {toast && (
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-xl shadow-xl flex items-center gap-3 text-white font-medium text-sm animate-fadeIn ${toast.type === 'error' ? 'bg-red-500' : 'bg-green-500'}`}>
+          {toast.type === 'error' ? <XCircle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
+          {toast.message}
+        </div>
+      )}
+
+      {/* Modal - Configurar Cota do Grupo */}
+      {isCotaModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fadeIn" onClick={() => setIsCotaModalOpen(false)} />
+          <div className="relative bg-white w-full max-w-[420px] rounded-2xl shadow-2xl animate-scaleIn">
+            <div className="p-6 border-b border-[#F3F4F6] bg-[#fcfbfd] flex items-center justify-between rounded-t-2xl">
+              <h3 className="text-lg font-bold text-[var(--color-text-main)] flex items-center gap-2">
+                <Globe className="w-5 h-5 text-[var(--color-primary)]" />
+                Definir Cota - {editingGrupoCota?.nome}
+              </h3>
+            </div>
+            
+            <form onSubmit={handleSaveCota} className="p-6 space-y-5">
+              <div className="space-y-1.5 opacity-70">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Mês de Referência</label>
+                <input
+                  type="text"
+                  disabled
+                  value={formatterMesAno.format(mesAtual).toUpperCase()}
+                  className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-[var(--color-border)] text-sm font-bold text-gray-600 outline-none cursor-not-allowed"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Valor Limite Mensal (R$)</label>
+                <input
+                  required
+                  autoFocus
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={cotaValor}
+                  onChange={(e) => setCotaValor(e.target.value)}
+                  placeholder="1500.00"
+                  className="w-full px-4 py-3 rounded-xl border border-[var(--color-border)] focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] outline-none transition-all text-sm"
+                />
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsCotaModalOpen(false)}
+                  className="flex-1 py-3 bg-white border border-[var(--color-border)] text-gray-500 rounded-xl font-bold text-sm shadow-sm hover:bg-gray-50 transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isCotaLoading}
+                  className="flex-1 py-3 bg-[var(--color-primary)] text-white rounded-xl font-bold text-sm shadow-md hover:bg-[var(--color-primary-hover)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                 >
+                  {isCotaLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                  Salvar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
