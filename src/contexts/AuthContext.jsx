@@ -24,15 +24,12 @@ export const AuthProvider = ({ children }) => {
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .single()
+        .timeout(5000); // 5 segundos
 
       if (error) throw error;
       setProfile(data);
     } catch (error) {
-      console.error('Erro ao buscar profile (fallback aplicado):', error);
-      // Fallback seguro: se falhar, assume role basica 'usuario'
-      // ativo: true garante que o usuário consiga acessar as telas normais 
-      // mesmo em falha de conexão repentina, mas não concede acesso a rotas admin.
       setProfile({ role: 'usuario', ativo: true });
     }
   };
@@ -67,16 +64,19 @@ export const AuthProvider = ({ children }) => {
       setSession(session);
       setUser(session?.user ?? null);
 
-      if (session?.user) {
-        await fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
-        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-          localStorage.clear();
-          window.location.href = '/login';
+      try {
+        if (session?.user) {
+          await fetchProfile(session.user.id);
+        } else {
+          setProfile(null);
+          if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+            localStorage.clear();
+            window.location.href = '/login';
+          }
         }
+      } finally {
+        if (mounted) setLoading(false);
       }
-      setLoading(false);
     });
 
     // Ping periódico temporariamente removido para testes.
