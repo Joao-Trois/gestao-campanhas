@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
   const fetchProfile = async (userId) => {
     try {
       const { data, error } = await Promise.race([
-        supabase.from('profiles').select('*').eq('id', userId).single(),
+        supabase.from('profiles').select('role, nome, email, ativo, grupo_id').eq('id', userId).single(),
         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
       ]);
 

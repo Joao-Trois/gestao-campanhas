@@ -15,8 +15,10 @@ import {
   Check
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function ContactListImport() {
+  const { profile } = useAuth();
   const navigate = useNavigate();
   const [listName, setListName] = useState('');
   const [file, setFile] = useState(null);
@@ -130,7 +132,8 @@ export default function ContactListImport() {
         .insert([{
           nome: listName.trim(),
           arquivo_url: filePath,
-          colunas: columns
+          colunas: columns,
+          grupo_id: profile.grupo_id
         }])
         .select()
         .single();

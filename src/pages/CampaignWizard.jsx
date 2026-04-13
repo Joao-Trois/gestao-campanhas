@@ -3,8 +3,8 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-  ArrowLeft, ArrowRight, Check, AlertCircle,
-  Settings2, GitMerge, Clock, ClipboardList,
+  ArrowLeft, ArrowRight, Check, AlertCircle, AlertTriangle,
+  Settings2, GitMerge, Clock, ClipboardList, DollarSign,
   Users, MessageSquare, Calendar, Zap, ChevronDown
 } from 'lucide-react';
 
@@ -203,6 +203,10 @@ export default function CampaignWizard() {
   const [scheduledAt, setScheduledAt] = useState('');
   const [scheduleError, setScheduleError] = useState('');
 
+  const [billingData, setBillingData] = useState(null);
+  const [billingLoading, setBillingLoading] = useState(false);
+  const [billingError, setBillingError] = useState(null);
+
   function showToast(type, message) {
     setToast({ type, message });
     setTimeout(() => setToast(null), 5000);
@@ -214,7 +218,7 @@ export default function CampaignWizard() {
       const [{ data: tData }, { data: lData }, { data: tagData }] = await Promise.all([
         supabase
           .from('templates')
-          .select('id, nome, texto, variaveis, meta_status, ativo, template_tags(tags(id,nome,cor))')
+          .select('id, nome, texto, variaveis, meta_status, ativo, type, grupo_id, template_tags(tags(id,nome,cor))')
           .eq('meta_status', 'aprovado')
           .eq('ativo', true)
           .order('nome'),
@@ -344,6 +348,81 @@ export default function CampaignWizard() {
     return true;
   }
 
+  // ─── Billing preview effect ───────────────────────────────────────────────
+  useEffect(() => {
+    if (step === 4 && selectedTemplate && selectedList) {
+      async function loadBilling() {
+        setBillingLoading(true);
+        setBillingError(null);
+        try {
+          // a) Contatos válidos da lista
+          const { count: contatosValidos } = await supabase
+            .from('contatos')
+            .select('*', { count: 'exact', head: true })
+            .eq('lista_id', selectedList.id)
+            .eq('valido', true);
+
+          // b) Preço USD pela categoria do template
+          const { data: precos } = await supabase
+            .from('tabela_precos')
+            .select('preco_usd')
+            .eq('categoria', selectedTemplate.type)
+            .eq('pais_codigo', 'BR')
+            .order('vigente_em', { ascending: false })
+            .limit(1);
+          const precoUsd = precos?.[0]?.preco_usd ?? 0;
+
+          // c) Cotação do dólar
+          const { data: configs } = await supabase
+            .from('configuracoes')
+            .select('valor')
+            .eq('chave', 'taxa_cambio_usd_brl')
+            .single();
+          const cotacao = parseFloat(configs?.valor ?? 0);
+
+          // d) Custo estimado
+          const custoEstimado = (contatosValidos ?? 0) * precoUsd * cotacao;
+
+          // e) Cota ativa do grupo no mês atual
+          const mesStr = new Date(new Date().setDate(1)).toISOString().slice(0, 10);
+          const { data: cota } = await supabase
+            .from('cotas')
+            .select('id, valor_limite, grupo_id')
+            .eq('grupo_id', selectedTemplate.grupo_id)
+            .eq('ativo', true)
+            .gte('mes_referencia', mesStr)
+            .order('mes_referencia', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          // f) Se cota existir, calcular gasto acumulado no mês e saldo
+          let saldoDisponivel = null;
+          let limiteExcedido = false;
+
+          if (cota) {
+            const { data: gastoRows } = await supabase
+              .from('transacoes_billing')
+              .select('custo_brl')
+              .eq('grupo_id', cota.grupo_id)
+              .gte('criado_em', mesStr);
+
+            const gastoMes = (gastoRows ?? []).reduce((acc, r) => acc + (r.custo_brl ?? 0), 0);
+            saldoDisponivel = cota.valor_limite - gastoMes;
+            limiteExcedido = custoEstimado > saldoDisponivel;
+          }
+
+          setBillingData({ contatosValidos, precoUsd, cotacao, custoEstimado, saldoDisponivel, limiteExcedido });
+        } catch (err) {
+          console.error(err);
+          setBillingError('Não foi possível calcular o custo estimado.');
+        } finally {
+          setBillingLoading(false);
+        }
+      }
+      loadBilling();
+    }
+  }, [step, selectedTemplate, selectedList]);
+
   // ─── Step navigation ──────────────────────────────────────────────────────
   function advanceStep() {
     if (step === 3 && !validateSchedule()) return;
@@ -390,7 +469,7 @@ export default function CampaignWizard() {
             status,
             agendado_para,
             criado_por: user?.id,
-            grupo_id: profile?.grupo_id,
+            grupo_id: profile.grupo_id,
           })
           .eq('id', id);
 
@@ -432,7 +511,7 @@ export default function CampaignWizard() {
             status,
             agendado_para,
             criado_por: user?.id,
-            grupo_id: profile?.grupo_id,
+            grupo_id: profile.grupo_id,
           }])
           .select()
           .single();
@@ -916,6 +995,13 @@ export default function CampaignWizard() {
                   </div>
                 </div>
               </div>
+
+              <CostPreviewCard
+                data={billingData}
+                loading={billingLoading}
+                error={billingError}
+              />
+
             </div>
           </div>
           {/* Rodapé fixo */}
@@ -936,8 +1022,8 @@ export default function CampaignWizard() {
               </button>
               <button
                 onClick={() => handleSave('confirmar')}
-                disabled={isSaving}
-                className="flex items-center gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-6 py-2 h-[46px] rounded-lg font-bold transition-all shadow-sm disabled:opacity-50"
+                disabled={isSaving || billingData?.limiteExcedido || billingLoading}
+                className={`flex items-center gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white px-6 py-2 h-[46px] rounded-lg font-bold transition-all shadow-sm ${billingData?.limiteExcedido ? 'opacity-50 cursor-not-allowed' : 'disabled:opacity-50'}`}
               >
                 {isSaving ? 'Salvando...' : (
                   id ? 'Confirmar e Disparar' : (
@@ -969,6 +1055,132 @@ function SummaryRow({ icon: Icon, label, value }) {
         <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">{label}</p>
         <p className="text-sm font-bold text-[#240B4B]">{value || '—'}</p>
       </div>
+    </div>
+  );
+}
+
+function CostPreviewCard({ data, loading, error }) {
+  if (loading) {
+    return (
+      <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-4 mt-8">
+        <div className="flex flex-col gap-3">
+          <div className="h-3.5 w-[60%] bg-gray-200 rounded animate-pulse" />
+          <div className="h-3.5 w-[80%] bg-gray-200 rounded animate-pulse" />
+          <div className="h-3.5 w-[50%] bg-gray-200 rounded animate-pulse" />
+          <div className="h-5 w-[40%] bg-gray-200 rounded animate-pulse mt-2" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-700 text-sm mt-8">
+        {error}
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  const { contatosValidos, precoUsd, cotacao, custoEstimado, saldoDisponivel, limiteExcedido } = data;
+
+  if (limiteExcedido) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-xl p-4 mt-8">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-7 h-7 rounded-full bg-red-100 flex items-center justify-center">
+            <AlertTriangle className="w-[14px] h-[14px] text-red-600" />
+          </div>
+          <span className="text-sm font-medium text-red-800">Previsão de custo da campanha</span>
+        </div>
+        <div className="flex flex-col divide-y divide-red-200">
+          <div className="flex justify-between py-2">
+            <span className="text-xs text-red-700/70">Contatos válidos</span>
+            <span className="text-xs font-medium text-red-800">{(contatosValidos ?? 0).toLocaleString('pt-BR')}</span>
+          </div>
+          <div className="flex justify-between py-2">
+            <span className="text-xs text-red-700/70">Custo por mensagem</span>
+            <span className="text-xs font-medium text-red-800">USD {(precoUsd ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}</span>
+          </div>
+          <div className="flex justify-between py-2">
+            <span className="text-xs text-red-700/70">Cotação do dólar</span>
+            <span className="text-xs font-medium text-red-800">R$ {(cotacao ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          </div>
+        </div>
+        <hr className="border-dashed border-red-200 my-2" />
+        <div className="flex justify-between items-center py-1">
+          <span className="text-sm font-medium text-red-800">Custo estimado</span>
+          <span className="text-lg font-medium text-red-600">R$ {(custoEstimado ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        </div>
+        {saldoDisponivel !== null && (
+          <>
+            <div className="flex justify-between items-center py-2 mt-1">
+              <span className="text-sm font-medium text-red-800">Saldo disponível do grupo</span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                R$ {(saldoDisponivel ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} disponível
+              </span>
+            </div>
+            <div className="flex justify-between items-center py-2">
+              <span className="text-xs text-red-700/70">Saldo após campanha</span>
+              <span className="text-xs font-medium text-red-800">
+                R$ {(saldoDisponivel - custoEstimado).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+          </>
+        )}
+        <div className="bg-red-100 border border-red-200 rounded-lg p-2.5 mt-3 text-xs text-red-700">
+          Limite de orçamento excedido. Esta campanha não pode ser disparada. Contate o administrador para aumentar a cota do grupo.
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-4 mt-8">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center">
+          <DollarSign className="w-[14px] h-[14px] text-[var(--color-primary)]" />
+        </div>
+        <span className="text-sm font-medium text-[#240B4B]">Previsão de custo da campanha</span>
+      </div>
+      <div className="flex flex-col divide-y divide-[var(--color-border)]">
+        <div className="flex justify-between py-2">
+          <span className="text-xs text-[var(--color-text-secondary)]">Contatos válidos</span>
+          <span className="text-xs font-medium text-[#240B4B]">{(contatosValidos ?? 0).toLocaleString('pt-BR')}</span>
+        </div>
+        <div className="flex justify-between py-2">
+          <span className="text-xs text-[var(--color-text-secondary)]">Custo por mensagem</span>
+          <span className="text-xs font-medium text-[#240B4B]">USD {(precoUsd ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}</span>
+        </div>
+        <div className="flex justify-between py-2">
+          <span className="text-xs text-[var(--color-text-secondary)]">Cotação do dólar</span>
+          <span className="text-xs font-medium text-[#240B4B]">R$ {(cotacao ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        </div>
+      </div>
+      <hr className="border-dashed border-[var(--color-border)] my-2" />
+      <div className="flex justify-between items-center py-1">
+        <span className="text-sm font-medium text-[#240B4B]">Custo estimado</span>
+        <span className="text-lg font-medium text-[var(--color-primary)]">R$ {(custoEstimado ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+      </div>
+      {saldoDisponivel !== null && (
+        <>
+          <div className="flex justify-between items-center py-2 mt-1">
+            <span className="text-sm font-medium text-[#240B4B]">Saldo disponível do grupo</span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-xs font-semibold border border-green-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              R$ {(saldoDisponivel ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} disponível
+            </span>
+          </div>
+          <div className="flex justify-between items-center py-2">
+            <span className="text-xs text-[var(--color-text-secondary)]">Saldo após campanha</span>
+            <span className="text-xs font-medium text-[#240B4B]">
+              R$ {(saldoDisponivel - custoEstimado).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Plus, Tag as TagIcon, Trash2, Edit2, X, Check, AlertCircle } from 'lucide-react';
 import { SkeletonBlock } from '../components/Skeleton';
+import { useAuth } from '../contexts/AuthContext';
 
 const PREDEFINED_COLORS = [
   '#6C3FC8', '#FF4B4B', '#FF9F1C', '#F4E23C',
@@ -9,6 +10,7 @@ const PREDEFINED_COLORS = [
 ];
 
 export default function Tags() {
+  const { profile } = useAuth();
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -77,7 +79,7 @@ export default function Tags() {
       if (modalMode === 'create') {
         const { data, error } = await supabase
           .from('tags')
-          .insert([{ nome: currentTag.nome.trim(), cor: currentTag.cor }])
+          .insert([{ nome: currentTag.nome.trim(), cor: currentTag.cor, grupo_id: profile.grupo_id }])
           .select();
 
         if (error) throw error;

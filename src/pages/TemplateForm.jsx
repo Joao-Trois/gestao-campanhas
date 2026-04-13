@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { ArrowLeft, Save, AlertCircle, Check, MessageSquare, ChevronDown, Lock } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 function CustomSelect({ value, onChange, options, placeholder, className = "", disabled = false }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -60,6 +61,7 @@ function CustomSelect({ value, onChange, options, placeholder, className = "", d
 }
 
 export default function TemplateForm() {
+  const { profile } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditing = Boolean(id);
@@ -237,7 +239,8 @@ export default function TemplateForm() {
             descricao: formData.descricao || null,
             texto: formData.texto,
             variaveis: formData.variaveis,
-            type: formData.type
+            type: formData.type,
+            grupo_id: profile.grupo_id
           }])
           .select()
           .single();
