@@ -59,16 +59,20 @@ export default function ContactLists() {
 
     try {
       // Regra de Negócio: Verificar se está em uso por alguma campanha
-      const { data: campaignCheck, error: checkError } = await supabase
+      const { data: campanhasAtivas, error: errCheck } = await supabase
         .from('campanhas')
-        .select('id')
+        .select('id, status')
         .eq('lista_id', listToDelete.id)
-        .limit(1);
+        .in('status', ['agendada', 'em_andamento']);
 
-      if (checkError) throw checkError;
+      if (errCheck) {
+        showToast('error', 'Erro ao verificar campanhas vinculadas.');
+        setIsDeleteModalOpen(false);
+        return;
+      }
 
-      if (campaignCheck && campaignCheck.length > 0) {
-        showToast('error', 'Esta lista está vinculada a uma ou mais campanhas e não pode ser excluída.');
+      if (campanhasAtivas?.length > 0) {
+        showToast('error', 'Esta lista está sendo usada por uma campanha ativa ou agendada. Aguarde a conclusão antes de excluir.');
         setIsDeleteModalOpen(false);
         return;
       }
@@ -234,8 +238,12 @@ export default function ContactLists() {
             <h2 className="text-[#240B4B] text-[20px] font-semibold text-center">
               Excluir lista de contatos?
             </h2>
-            <p className="text-center text-[#54456B]">
-              Esta ação removerá permanentemente a lista <strong className="text-[#240B4B]">{listToDelete?.nome}</strong> e todos os contatos vinculados a ela.
+            <p className="text-sm text-[#240b4b]">
+              Tem certeza que deseja excluir a lista{' '}
+              <span className="font-medium">"{listToDelete?.nome}"</span>?
+            </p>
+            <p className="text-sm text-[#240b4b] opacity-60 mt-2">
+              Após a exclusão não será mais possível acessar o relatório de validade dos contatos nem recuperar os dados importados.
             </p>
 
             <div className="flex items-center gap-4 mt-2">

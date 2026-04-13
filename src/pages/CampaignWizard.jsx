@@ -387,7 +387,7 @@ export default function CampaignWizard() {
           const mesStr = new Date(new Date().setDate(1)).toISOString().slice(0, 10);
           const { data: cota } = await supabase
             .from('cotas')
-            .select('id, valor_limite, grupo_id')
+            .select('id, valor_limite, grupo_id, saldo_reservado')
             .eq('grupo_id', selectedTemplate.grupo_id)
             .eq('ativo', true)
             .gte('mes_referencia', mesStr)
@@ -407,7 +407,7 @@ export default function CampaignWizard() {
               .gte('criado_em', mesStr);
 
             const gastoMes = (gastoRows ?? []).reduce((acc, r) => acc + (r.custo_brl ?? 0), 0);
-            saldoDisponivel = cota.valor_limite - gastoMes;
+            saldoDisponivel = cota.valor_limite - gastoMes - (cota.saldo_reservado ?? 0);
             limiteExcedido = custoEstimado > saldoDisponivel;
           }
 
@@ -470,6 +470,7 @@ export default function CampaignWizard() {
             agendado_para,
             criado_por: user?.id,
             grupo_id: profile.grupo_id,
+            custo_estimado: billingData?.custoEstimado ?? null,
           })
           .eq('id', id);
 
@@ -512,6 +513,7 @@ export default function CampaignWizard() {
             agendado_para,
             criado_por: user?.id,
             grupo_id: profile.grupo_id,
+            custo_estimado: billingData?.custoEstimado ?? null,
           }])
           .select()
           .single();
@@ -537,6 +539,32 @@ export default function CampaignWizard() {
             }));
             await supabase.from('entregas').insert(batch);
           }
+        }
+      }
+
+      console.log('billingData no handleSave:', billingData);
+      console.log('lock block reached', { status, custoEstimado: billingData?.custoEstimado });
+      if (status === 'agendada' && billingData?.custoEstimado > 0) {
+        const mesStr = new Date(new Date().setDate(1)).toISOString().slice(0, 10);
+        const { data: cota } = await supabase
+          .from('cotas')
+          .select('id, saldo_reservado')
+          .eq('grupo_id', profile.grupo_id)
+          .eq('ativo', true)
+          .gte('mes_referencia', mesStr)
+          .order('mes_referencia', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        console.log('cota encontrada:', cota);
+
+        if (cota) {
+          const { data: updCota, error: updErr } = await supabase
+            .from('cotas')
+            .update({ saldo_reservado: (cota.saldo_reservado ?? 0) + billingData.custoEstimado })
+            .eq('id', cota.id)
+            .select();
+          console.log('update cota result:', updCota, updErr);
         }
       }
 

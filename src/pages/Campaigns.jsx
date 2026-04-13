@@ -219,12 +219,42 @@ export default function Campaigns() {
     if (!cancelTarget) return;
     setIsCancelling(true);
     try {
+      // 1. Buscar custo_estimado da campanha antes de cancelar
+      const { data: campanha } = await supabase
+        .from('campanhas')
+        .select('custo_estimado, grupo_id')
+        .eq('id', cancelTarget.id)
+        .single();
+
+      // 2. Cancelar a campanha
       const { error } = await supabase
         .from('campanhas')
         .update({ status: 'cancelada' })
         .eq('id', cancelTarget.id);
 
       if (error) throw error;
+
+      // 3. Estornar saldo_reservado se havia custo estimado
+      if (campanha?.custo_estimado > 0) {
+        const mesStr = new Date(new Date().setDate(1)).toISOString().slice(0, 10);
+        const { data: cota } = await supabase
+          .from('cotas')
+          .select('id, saldo_reservado')
+          .eq('grupo_id', campanha.grupo_id)
+          .eq('ativo', true)
+          .gte('mes_referencia', mesStr)
+          .order('mes_referencia', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (cota) {
+          await supabase
+            .from('cotas')
+            .update({ saldo_reservado: Math.max(0, (cota.saldo_reservado ?? 0) - campanha.custo_estimado) })
+            .eq('id', cota.id);
+        }
+      }
+
       setCampaigns(prev =>
         prev.map(c => c.id === cancelTarget.id ? { ...c, status: 'cancelada' } : c)
       );

@@ -38,7 +38,7 @@ export default function GraficoUsoPorGrupo() {
 
       let query = supabase
         .from('vw_budget_grupos')
-        .select('grupo_id, grupo_nome, valor_limite, gasto_atual');
+        .select('grupo_id, grupo_nome, valor_limite, saldo_reservado, gasto_atual');
 
       if (!isAdmin) {
         query = query.eq('grupo_id', profile.grupo_id);
@@ -54,12 +54,19 @@ export default function GraficoUsoPorGrupo() {
           ? Math.min(Math.round((gasto / limite) * 100), 100)
           : null;
 
+        const reservado = Number(row.saldo_reservado ?? 0);
+        const percentReservado = limite && limite > 0
+          ? Math.min(Math.round((reservado / limite) * 100), 100 - percent)
+          : 0;
+
         return {
           id: row.grupo_id,
           nome: row.grupo_nome,
           gasto,
+          reservado,
           limite,
-          percent
+          percent,
+          percentReservado
         };
       });
 
@@ -138,17 +145,31 @@ export default function GraficoUsoPorGrupo() {
                   {hasCota ? `${item.percent}%` : '—'}
                 </span>
               </div>
-              <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden mb-3">
+              <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden flex mb-3">
                 <div
-                  className="h-full rounded-full"
+                  className="h-full"
                   style={{ width: barWidth, backgroundColor: barColor, transition: 'width 0.6s ease' }}
                 />
+                {hasCota && item.percentReservado > 0 && (
+                  <div
+                    className="h-full"
+                    style={{ width: `${item.percentReservado}%`, backgroundColor: '#a78bfa', transition: 'width 0.6s ease' }}
+                  />
+                )}
               </div>
               <p className="text-xs text-[#54456B] font-medium">
                 {hasCota ? (
                   <>
                     <span className="font-bold text-[var(--color-text-main)]">{formatBRL(item.gasto)}</span>
-                    {' gastos de '}
+                    {' gastos'}
+                    {item.reservado > 0 && (
+                      <>
+                        {' · '}
+                        <span className="font-bold text-purple-500">{formatBRL(item.reservado)}</span>
+                        {' reservados'}
+                      </>
+                    )}
+                    {' de '}
                     <span className="font-bold text-[var(--color-text-main)]">{formatBRL(item.limite)}</span>
                   </>
                 ) : (
